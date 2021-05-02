@@ -8,8 +8,10 @@ mock = True
 plugins = []
 services = []
 
-mblocks_network = 'mblocks'
-mblocks_containers = {
+for item in client.containers.list(filters={'ancestor':'mblocks/server'}):
+    network = list(item.attrs['NetworkSettings']['Networks'].keys())[0]
+    
+containers = {
     'gateway':{
         'image':'mblocks/gateway',
         'settings':{
@@ -43,7 +45,7 @@ mblocks_containers = {
 
 
 if mock:
-    mblocks_containers['mock'] = {
+    containers['mock'] = {
                                     'image':'mock-server',
                                     'settings':{},
                                     'service':{
@@ -56,27 +58,22 @@ else:
         'name':'redis-auth',
         'config': {
             'hide_credentials': True,
-            'redis_host': mblocks_containers['redis']['ip'],
+            'redis_host': containers['redis']['ip'],
             'redis_key_prefix': 'redis-auth:',
             'consumer_keys':['user_id','third','third_user_id','third_user_name']
         }
     })
 
 
-# create a network named mblocks if not exists
-if len([i for i in client.networks.list() if i.name==mblocks_network]) == 0:
-    client.networks.create(mblocks_network)
-
-
 # create container if not exists
-for name, item in mblocks_containers.items():
+for name, item in containers.items():
     try:
         client.containers.get('mblocks_{}'.format(name))
     except docker.errors.NotFound:
         client.containers.run(item.get('image'),
                                               name='mblocks_{}'.format(name),
                                               detach=True,
-                                              network=mblocks_network,
+                                              network=network,
                                               **item.get('settings')
                                             )
         
@@ -87,7 +84,7 @@ for item in client.containers.list(all=True,filters={'name':'mblocks_'}):
     if item.status == 'exited':
         item.start()
     # get container's ip
-    mblocks_containers[item.name.replace('mblocks_','')]['ip'] = item.attrs['NetworkSettings']['Networks']['mblocks']['IPAddress']
+    containers[item.name.replace('mblocks_','')]['ip'] = item.attrs['NetworkSettings']['Networks'][network]['IPAddress']
 
 
 
@@ -95,7 +92,7 @@ for item in client.containers.list(all=True,filters={'name':'mblocks_'}):
 
 
 
-for name, item in mblocks_containers.items():
+for name, item in containers.items():
     service =  item.get('service')
     if service:
         services.append({
@@ -106,7 +103,7 @@ for name, item in mblocks_containers.items():
             }]
         })
 
-resp = requests.post(('http://{}:8001/config'.format(mblocks_containers['gateway']['ip'])), json={
+resp = requests.post(('http://{}:8001/config'.format(containers['gateway']['ip'])), json={
   "_format_version": "2.1",
   "_transform": True,
   "services": services,
