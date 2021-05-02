@@ -1,6 +1,5 @@
 import docker
 import requests
-import time
 
 
 #client = docker.from_env()
@@ -107,8 +106,7 @@ for name, item in mblocks_containers.items():
             }]
         })
 
-time.sleep(10)
-resp = requests.post('http://172.20.0.2:8001/config', json={
+resp = requests.post(('http://{}:8001/config'.format(mblocks_containers['gateway']['ip'])), json={
   "_format_version": "2.1",
   "_transform": True,
   "services": services,
