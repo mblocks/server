@@ -4,6 +4,7 @@ import requests
 
 #client = docker.from_env()
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+container_name_prefix = 'mblocks_'
 mock = True
 plugins = []
 services = []
@@ -15,7 +16,7 @@ containers = {
     'gateway': {
         'image': 'mblocks/gateway',
         'settings': {
-            'ports': {'80': '80', '8001': '8001'},
+            'ports': {'80': '80'},
             'environment': {
                 'KONG_DATABASE': 'off',
                 'KONG_PROXY_ACCESS_LOG': '/dev/stdout',
@@ -60,10 +61,10 @@ else:
 # create container if not exists
 for name, item in containers.items():
     try:
-        client.containers.get('mblocks_{}'.format(name))
+        client.containers.get(container_name_prefix + name)
     except docker.errors.NotFound:
         client.containers.run(item.get('image'),
-                              name='mblocks_{}'.format(name),
+                              name=container_name_prefix + name,
                               detach=True,
                               network=network,
                               **item.get('settings')
@@ -71,13 +72,13 @@ for name, item in containers.items():
 
 
 # get mblocks's container ip adress
-for item in client.containers.list(all=True, filters={'name': 'mblocks_'}):
+for item in client.containers.list(all=True, filters={'name': container_name_prefix}):
     # start exited container
     if item.status == 'exited':
         item.start()
     # get container's ip
     containers[item.name.replace(
-        'mblocks_', '')]['ip'] = item.attrs['NetworkSettings']['Networks'][network]['IPAddress']
+        container_name_prefix, '')]['ip'] = item.attrs['NetworkSettings']['Networks'][network]['IPAddress']
 
 
 for name, item in containers.items():
