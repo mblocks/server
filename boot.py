@@ -31,14 +31,6 @@ containers = {
         'image': 'redis:alpine',
         'settings': {}
     },
-    'mock': {
-        'image': 'mock-server',
-        'settings': {},
-        'service': {
-            'endpoint': 'http://{ip}:8000/api/',
-            'paths': ['/']
-        },
-    }
 }
 
 # genrerate kong declare config
@@ -46,7 +38,7 @@ containers = {
 
 if mock:
     containers['mock'] = {
-        'image': 'mock-server',
+        'image': 'mblocks/mock',
         'settings': {},
         'service': {
             'endpoint': 'http://{ip}:8000/api/',
