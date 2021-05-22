@@ -22,7 +22,7 @@ def pytest_configure(config):
 
 @pytest.fixture(autouse=True)
 def init_db(monkeypatch):
-    Base.metadata.drop_all(bind=engine)
+    #Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
 @pytest.fixture(scope="session")
