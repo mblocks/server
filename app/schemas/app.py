@@ -1,5 +1,6 @@
 from typing import Optional, List
 from pydantic import BaseModel, HttpUrl
+from .service import Service
 
 
 # Shared properties
@@ -9,11 +10,13 @@ class AppBase(BaseModel):
     description: Optional[str] = None
     enabled: Optional[bool] = True
     endpoint: Optional[str] = None
+    services: List[Service] = []
 
 
 class AppCreate(AppBase):
     name: str
     title: str
+    services: List[Service]
 
 
 class AppUpdate(AppBase):

@@ -24,11 +24,17 @@ class App(Base):
     data_updated_by = Column(Integer)
     data_deleted_by = Column(Integer)
 
+    services = relationship("Service",
+                        primaryjoin="App.id==foreign(Service.parent_id)",
+                        lazy='selectin'
+                        )
+
     
 class Service(Base):
     __tablename__ = "apps_services"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    parent_id = Column(Integer, index=True)
     name = Column(String(100), unique=True, index=True)
     title = Column(String(100))
     image = Column(String(100))
