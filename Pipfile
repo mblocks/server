@@ -4,10 +4,15 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest = "*"
 
 [packages]
 docker = "*"
 requests = "*"
+fastapi = "*"
+uvicorn = "*"
+pydantic = {extras = ["dotenv","email"],version = "*"}
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.8"
