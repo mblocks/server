@@ -15,7 +15,8 @@ class CRUDApp(CRUDBase[App, AppCreate, AppUpdate]):
                 parent_id=db_obj.id,
                 name=item.name,
                 title=item.title,
-                image=item.image
+                image=item.image,
+                environment =item.environment
             ))
 
 

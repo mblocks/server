@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+import json
 from app.db import crud
-from app.schemas import AppCreate, AppUpdate, Service
+from app.schemas import AppCreate, AppUpdate, Service, Environment
 
 def test_app_create(db):
     app = crud.app.create(db=db, obj_in=AppCreate(
@@ -9,14 +10,16 @@ def test_app_create(db):
         enabled=True,
         endpoint='http://10.12.32.54',
         services=[
-            Service(name='main',title='main-title',image='nginx:alpine'),
+            Service(name='main',title='main-title',image='nginx:alpine',environment=[Environment(name='DB_HOST',value='127.0.0.1')]),
             Service(name='other',title='other-title',image='nginx:alpine')
         ]
     ))
     find_app = crud.app.get(db=db, id=app.id)
+    first_service = find_app.services[0]
     assert find_app.name == app.name
     assert isinstance(find_app.services ,list)
     assert len(find_app.services) == 2
+    assert isinstance(first_service.environment ,list)
 
 def test_app_update(db):
     app = crud.app.create(db=db, obj_in=AppCreate(

@@ -1,14 +1,20 @@
 from typing import Optional, List
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
 
-# Shared properties
+class Environment(BaseModel):
+    name: str
+    value: str
+
+
 class ServiceBase(BaseModel):
     name: Optional[str] = None
     title: Optional[str] = None
     image: Optional[str] = None
     container_id: Optional[str] = None
     ip: Optional[str] = None
+    environment: List[Environment] = []
+    status: Optional[str] = None
 
 
 class ServiceCreate(ServiceBase):

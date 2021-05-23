@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import json
 from typing import TYPE_CHECKING
 from datetime import datetime
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import Boolean, Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
@@ -40,6 +42,7 @@ class Service(Base):
     image = Column(String(100))
     container_id = Column(Boolean, default=True)
     ip = Column(String(100))
+    _environment = Column("environment",String(400))
 
     data_enabled = Column(Boolean, default=True)
     data_created_at = Column(DateTime,default=datetime.utcnow)
@@ -49,4 +52,11 @@ class Service(Base):
     data_updated_by = Column(Integer)
     data_deleted_by = Column(Integer)
 
-    
+    @property
+    def environment(self):
+        return json.loads(self._environment)
+
+    @environment.setter
+    def environment(self, value):
+        # https://docs.sqlalchemy.org/en/14/orm/mapped_attributes.html#using-custom-datatypes-at-the-core-level
+        self._environment = json.dumps(jsonable_encoder(value))
