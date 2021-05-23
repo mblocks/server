@@ -16,6 +16,14 @@ uvicorn app.main:app --reload
 
 ```
 
+## Run Tests
+
+```bash
+
+pytest
+
+```
+
 ## Generate Requirement
 
 ```bash

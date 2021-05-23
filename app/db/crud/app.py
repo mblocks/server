@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Optional
 from sqlalchemy.orm import Session
 from app.db.models import App, Service
 from app.schemas import AppCreate, AppUpdate
