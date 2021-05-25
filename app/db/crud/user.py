@@ -15,7 +15,23 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
                 db.add(Authorized(
                     user_id=db_obj.id,
                     role_id=item_role.id,
+                    app_id=item_app.id,
                 ))
+    
+    def before_update(self, db: Session, *, db_obj, obj_in):
+        exists_app_roles = {}
+        for item in db_obj.apps:
+            exists_app_roles[item.id] = set([item_role.id for item_role in item.roles]) # count exists role_id
+
+        for item in obj_in.apps:
+            item_roles = set([item_role.id for item_role in item.roles])
+            for new_role_id in (item_roles - exists_app_roles.get(item.id,set([]))):
+                    db.add(Authorized(app_id=item.id,role_id=new_role_id,user_id=db_obj.id))
+
+            if len(exists_app_roles.get(item.id,set([])) - item_roles)>0:
+                db.query(Authorized)\
+                  .filter(Authorized.app_id==item.id,Authorized.role_id.in_(exists_app_roles.get(item.id) - item_roles))\
+                  .update({'data_enabled':False}, synchronize_session = False)
 
     def get(self, db: Session, id: int) -> Optional[User]:
         user = super().get(db=db, id=id)

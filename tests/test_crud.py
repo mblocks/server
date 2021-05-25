@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 from app.db import crud
-from app.schemas import AppCreate, AppUpdate, Service, Environment, UserCreate, Role, RoleCreate
+from app.schemas import AppCreate, AppUpdate, Service, Environment, UserCreate, UserUpdate, Role, RoleCreate
 
 
 def test_app_create(db):
@@ -73,7 +73,7 @@ def test_user_create(db):
                 'id': 1,
                 'roles': [
                             {'id': 1, 'title': 'role1'}
-                            ]
+                        ]
             }
         ]
     }))
@@ -84,3 +84,22 @@ def test_user_create(db):
     assert isinstance(first_app.roles, list)
     assert first_role.title == 'role1'
     assert first_role.id == 1
+
+
+def test_user_update(db):
+    user = crud.user.get(db=db, id=1)
+    crud.user.update(db=db, db_obj=user, obj_in=UserUpdate.parse_obj({
+        'user_name':'hello1_new',
+        'apps': [
+            {
+                'name': 'app1',
+                'title': 'app1-title',
+                'id': 1,
+                'roles': []
+            }
+        ]
+    }))
+
+    find_user = crud.user.get(db, id=1 )
+    assert find_user.user_name == user.user_name
+    assert len(find_user.apps)== 0
