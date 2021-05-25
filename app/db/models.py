@@ -40,7 +40,7 @@ class Service(Base):
     name = Column(String(100), unique=True, index=True)
     title = Column(String(100))
     image = Column(String(100))
-    container_id = Column(Boolean, default=True)
+    container_id = Column(String(100), default=True)
     ip = Column(String(100))
     _environment = Column("environment",String(400))
 
@@ -117,4 +117,4 @@ class User(Base):
     email = Column(String(100), index=True)
     enabled = Column(Boolean, default=True)
 
-    roles = relationship("Role", secondary='authorized', back_populates="users")
+    roles = relationship("Role", primaryjoin="and_(Role.id==Authorized.role_id, Authorized.data_enabled==True)", secondary='authorized', back_populates="users")
