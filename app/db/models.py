@@ -6,6 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
+from app.utils import get_password_hash
 
 
 class App(Base):
@@ -116,5 +117,14 @@ class User(Base):
     user_name = Column(String(100), unique=True, index=True)
     email = Column(String(100), index=True)
     enabled = Column(Boolean, default=True)
+    _password = Column("password",String(100))
+
+    @property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        self._password = get_password_hash(value)
 
     roles = relationship("Role", primaryjoin="and_(Role.id==Authorized.role_id, Authorized.data_enabled==True)", secondary='authorized', back_populates="users")

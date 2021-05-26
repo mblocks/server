@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 from app.db import crud
-from app.schemas import AppCreate, AppUpdate, Service, Environment, UserCreate, UserUpdate, Role, RoleCreate
+from app.utils import verify_password
+from app.schemas import AppCreate, AppUpdate, Service, Environment, UserCreate, UserUpdate, Role, RoleCreate, AccountCreate, AccountUpdate
 
 
 def test_app_create(db):
@@ -103,3 +104,13 @@ def test_user_update(db):
     find_user = crud.user.get(db, id=1 )
     assert find_user.user_name == user.user_name
     assert len(find_user.apps)== 0
+
+
+def test_account_create(db):
+    account = crud.account.create(db=db, obj_in=AccountCreate.parse_obj({
+        'user_name': 'account1',
+        'password': '123456',
+    }))
+    find_account = crud.account.get(db, account.id)
+    assert account.user_name == find_account.user_name
+    assert verify_password('123456',account.password)

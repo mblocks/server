@@ -13,6 +13,8 @@ fastapi = "*"
 uvicorn = "*"
 pydantic = {extras = ["dotenv","email"],version = "*"}
 sqlalchemy = "*"
+passlib = "*"
+bcrypt = "*"
 
 [requires]
 python_version = "3.8"
