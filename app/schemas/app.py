@@ -1,6 +1,8 @@
 from typing import Optional, List
 from pydantic import BaseModel, HttpUrl
-from .service import Service
+from .service import Service, ServiceLite, ServiceCreate
+from .base import DBBase
+from .role import RoleLite
 
 
 # Shared properties
@@ -10,30 +12,27 @@ class AppBase(BaseModel):
     description: Optional[str] = None
     enabled: Optional[bool] = True
     endpoint: Optional[str] = None
-    services: List[Service] = []
 
 
 class AppCreate(AppBase):
     name: str
     title: str
-    services: List[Service]
+    services: List[ServiceCreate]
 
 
 class AppUpdate(AppBase):
     pass
 
 
-class AppInDBBase(AppBase):
-    id: Optional[int] = None
-
-    class Config:
-        orm_mode = True
+class App(AppBase, DBBase):
+    services: List[Service] = []
+    roles: List[RoleLite] = []
 
 
-class App(AppInDBBase):
-    pass
+class AppLite(AppBase, DBBase):
+    services: List[ServiceLite] = []
 
 
 class AppList(BaseModel):
-    data: List[App]
+    data: List[AppLite]
     total: Optional[int] = 0

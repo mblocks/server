@@ -1,5 +1,6 @@
 from typing import Optional, List
 from pydantic import BaseModel
+from .base import DBBase
 
 
 class Environment(BaseModel):
@@ -11,10 +12,7 @@ class ServiceBase(BaseModel):
     name: Optional[str] = None
     title: Optional[str] = None
     image: Optional[str] = None
-    container_id: Optional[str] = None
-    ip: Optional[str] = None
     environment: List[Environment] = []
-    status: Optional[str] = None
     parent_id: Optional[int] = None
 
 
@@ -27,15 +25,17 @@ class ServiceUpdate(ServiceBase):
     pass
 
 
-class ServiceInDBBase(ServiceBase):
-    id: Optional[int] = None
+class Service(ServiceBase, DBBase):
+    container_id: Optional[str] = None
+    ip: Optional[str] = None
+    status: Optional[str] = None
 
-    class Config:
-        orm_mode = True
 
-
-class Service(ServiceInDBBase):
-    pass
+class ServiceLite(DBBase):
+    name: Optional[str] = None
+    title: Optional[str] = None
+    image: Optional[str] = None
+    status: Optional[str] = None
 
 
 class ServiceList(BaseModel):

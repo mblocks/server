@@ -1,5 +1,6 @@
 from typing import Optional, List
 from pydantic import BaseModel, Json
+from .base import DBBase
 
 
 class RoleBase(BaseModel):
@@ -18,16 +19,13 @@ class RoleUpdate(RoleBase):
     pass
 
 
-class RoleInDBBase(RoleBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-
-class Role(RoleInDBBase):
+class Role(RoleBase, DBBase):
     pass
 
+
+class RoleLite(DBBase):
+    title: Optional[str] = None
+   
 
 class RoleList(BaseModel):
     data: List[Role]

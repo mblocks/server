@@ -1,13 +1,7 @@
-from typing import Optional, List
+from typing import Optional
 from pydantic import BaseModel
-from .role import Role
+from .base import DBBase
 
-
-class AccountBase(BaseModel):
-    user_name: Optional[str] = None
-    email: Optional[str] = None
-    password: Optional[str] = None
-    
 
 class AccountCreate(BaseModel):
     user_name: str
@@ -15,17 +9,11 @@ class AccountCreate(BaseModel):
 
 
 class AccountUpdate(BaseModel):
-    email: str
-    password: str
+    email: Optional[str] = None
+    password: Optional[str] = None
 
 
-class AccountInDBBase(AccountBase):
-    id: Optional[int] = None
-
-    class Config:
-        orm_mode = True
-
-
-class Account(AccountInDBBase):
-    pass
-
+class Account(DBBase):
+    user_name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
