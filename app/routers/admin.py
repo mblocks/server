@@ -188,6 +188,22 @@ async def get_user(user_id: int, db: Session = Depends(deps.get_db)):
     return find_user
 
 
+@router.post("/users", response_model=schemas.User)
+async def create_app(payload: schemas.UserCreate,
+                     db: Session = Depends(deps.get_db)
+                     ):
+    if crud.user.count(db, search={'user_name': payload.user_name}) > 0:
+        raise HTTPException(status_code=422, detail=[
+            {
+                "loc": ["body", "user_name"],
+                "msg": "user_name already registered",
+                "type": "value_error"
+            },
+        ])
+    user = crud.user.create(db=db, obj_in=payload)
+    return crud.user.get_multi_with_roles(db, id=user.id)
+
+
 @router.post("/users/{user_id}", response_model=schemas.User)
 async def create_user(user_id: int,
                       payload: schemas.UserUpdate,
