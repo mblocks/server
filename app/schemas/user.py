@@ -14,7 +14,7 @@ class AppRoles(BaseModel):
 class UserBase(BaseModel):
     user_name: Optional[str] = None
     email: Optional[str] = None
-    enabled: Optional[bool] = True
+    enabled: Optional[bool] = None
 
 
 class UserUpdate(UserBase):
@@ -26,7 +26,7 @@ class UserCreate(UserUpdate):
     email: str
 
 
-class User(UserBase, DBBase):
+class User(UserUpdate, DBBase):
     pass
 
 
