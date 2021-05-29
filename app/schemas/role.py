@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Json
 
 
@@ -27,3 +27,8 @@ class RoleInDBBase(RoleBase):
 
 class Role(RoleInDBBase):
     pass
+
+
+class RoleList(BaseModel):
+    data: List[Role]
+    total: Optional[int] = 0

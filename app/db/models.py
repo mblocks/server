@@ -85,7 +85,11 @@ class Role(Base):
 
     @property
     def auth(self):
-        return json.loads(self._auth)
+        """
+        prevent pydantic model auto translate json string to dict
+        """
+        #return json.loads(self._auth)
+        return str(self._auth)
 
     @auth.setter
     def auth(self, value):

@@ -15,11 +15,12 @@ class ServiceBase(BaseModel):
     ip: Optional[str] = None
     environment: List[Environment] = []
     status: Optional[str] = None
+    parent_id: Optional[int] = None
 
 
 class ServiceCreate(ServiceBase):
     name: str
-    title: str
+    image: str
 
 
 class ServiceUpdate(ServiceBase):

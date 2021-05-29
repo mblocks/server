@@ -15,6 +15,7 @@ pydantic = {extras = ["dotenv","email"],version = "*"}
 sqlalchemy = "*"
 passlib = "*"
 bcrypt = "*"
+redis = "*"
 
 [requires]
 python_version = "3.8"
