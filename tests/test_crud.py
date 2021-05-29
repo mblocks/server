@@ -2,7 +2,7 @@
 import json
 from app.db import crud
 from app.utils import verify_password
-from app.schemas import AppCreate, AppUpdate, Service, Environment, UserCreate, UserUpdate, Role, RoleCreate, AccountCreate, AccountUpdate
+from app.schemas import AppCreate, AppUpdate, Service, UserCreate, UserUpdate, Role, RoleCreate, AccountCreate, AccountUpdate
 
 
 def test_app_create(db):
