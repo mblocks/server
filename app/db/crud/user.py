@@ -51,5 +51,28 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         user.apps = apps
         return user
 
+    def get_multi_with_roles(self, db: Session, id: int) -> Optional[User]:
+        find_user = super().get(db=db, id=id)
+        apps = {}
+        if find_user is None:
+            return find_user
+        for item in find_user.roles:
+            if apps.get(item.parent_id) is None:
+                apps[item.parent_id] = {'id':item.parent_id, 'roles':[]}
+            apps[item.parent_id]['roles'].append({
+                                    'id': item.id,
+                                    'title': item.title,
+                                 })
+        
+        for item in db.query(App).with_entities(App.id,App.name,App.title).filter(App.data_enabled==True,App.id.in_(apps.keys())).all():
+            apps[item.id]['name'] = item.name
+            apps[item.id]['title'] = item.title
+
+        return {
+            'id':find_user.id,
+            'user_name': find_user.user_name,
+            'email': find_user.email,
+            'apps': list(apps.values())
+        }
 
 user = CRUDUser(User)
