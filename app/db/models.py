@@ -41,7 +41,7 @@ class Service(Base):
     name = Column(String(100), unique=True, index=True)
     title = Column(String(100))
     image = Column(String(100))
-    container_id = Column(String(100), default=True)
+    container_id = Column(String(100))
     ip = Column(String(100))
     _environment = Column("environment",String(400))
 
@@ -73,7 +73,12 @@ class Role(Base):
     _auth = Column("auth",String(800))
     enabled = Column(Boolean, default=True)
     
-    users = relationship("User", secondary='authorized', back_populates="roles")
+    users = relationship("User",
+                        primaryjoin="Role.id==foreign(Authorized.role_id)",
+                        secondaryjoin="and_(User.id==foreign(Authorized.user_id),Authorized.data_enabled==True)",
+                        secondary='authorized',
+                        viewonly=True
+                        )
 
     data_enabled = Column(Boolean, default=True)
     data_created_at = Column(DateTime,default=datetime.utcnow)
@@ -100,8 +105,8 @@ class Authorized(Base):
     __tablename__ = "authorized"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    role_id = Column(Integer, ForeignKey("apps_roles.id"), index=True)
+    user_id = Column(Integer, index=True)
+    role_id = Column(Integer, index=True)
     app_id = Column(Integer)
 
     data_enabled = Column(Boolean, default=True)
@@ -131,4 +136,9 @@ class User(Base):
     def password(self, value):
         self._password = get_password_hash(value)
 
-    roles = relationship("Role", primaryjoin="and_(Role.id==Authorized.role_id, Authorized.data_enabled==True)", secondary='authorized', back_populates="users")
+    roles = relationship("Role",
+                        primaryjoin="User.id==foreign(Authorized.user_id)",
+                        secondaryjoin="and_(Role.id==foreign(Authorized.role_id),Authorized.data_enabled==True)",
+                        secondary='authorized',
+                        viewonly=True
+                        )
