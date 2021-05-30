@@ -125,6 +125,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_name = Column(String(100), unique=True, index=True)
     email = Column(String(100), index=True)
+    display_name = Column(String(100))
     enabled = Column(Boolean, default=True)
     _password = Column("password",String(100))
 
@@ -142,3 +143,14 @@ class User(Base):
                         secondary='authorized',
                         viewonly=True
                         )
+
+
+class ThirdUser(Base):
+    __tablename__ = "third_users"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    third = Column(String, index=True)
+    third_user_id = Column(String, index=True)
+    third_user_name = Column(String)
+    user_id = Column(Integer)
+    binded_at =Column(DateTime,default=datetime.utcnow)
+

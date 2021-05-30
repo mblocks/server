@@ -52,6 +52,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get(self, db: Session, id: Any) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.id == id).first()
 
+    def find(self, db: Session, *, search: Dict[str, str] = {}):
+        query = db.query(self.model)
+        query = self.__filter(query, search)
+        return query.first()
+
     def get_multi(
         self,
         db: Session,
