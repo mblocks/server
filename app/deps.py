@@ -2,7 +2,7 @@
 from fastapi import Request, HTTPException
 from app.db.session import SessionLocal, redis_client
 from app.schemas import CurrentUser
-from app.utils import is_authorized
+from app.db.cache import get_authorized
 
 def get_redis():
     return redis_client
@@ -26,6 +26,6 @@ def verify_user(request: Request):
     if not user_id:
         raise HTTPException(status_code=401, detail="you can not access")
 
-    if not is_authorized(app_id=1,user_id=user_id):
+    if '1' not in get_authorized(user_id=user_id):
         raise HTTPException(status_code=403, detail="you can not access")
 

@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
 from app import deps, config, schemas
 from app.db import crud
-from app.utils import create_random_apikey, verify_password
+from app.utils import verify_password
+from app.db.cache import generate_apikey
 
 router = APIRouter()
 
@@ -16,7 +17,7 @@ async def get_initdata(settings: config.Settings = Depends(config.get_settings))
     }
 
 
-@router.post("/join", response_model=schemas.AccountLite)
+@router.post("/join")
 async def join(response: Response,
                payload: schemas.AccountCreate,
                db: Session = Depends(deps.get_db)):
@@ -29,12 +30,12 @@ async def join(response: Response,
             },
         ])
     account = crud.account.create(db=db, obj_in=payload)
-    apikey = create_random_apikey(account)
+    apikey = generate_apikey(account)
     response.set_cookie(key="apikey", value=apikey)
-    return account
+    return {}
 
 
-@router.post("/login", response_model=schemas.AccountLite)
+@router.post("/login")
 async def login(response: Response,
                payload: schemas.AccountCreate,
                db: Session = Depends(deps.get_db)):
@@ -56,6 +57,7 @@ async def login(response: Response,
             },
         ])
     
-    apikey = create_random_apikey(find_user)
+    apikey = generate_apikey(find_user)
     response.set_cookie(key="apikey", value=apikey)
-    return find_user
+    return {}
+
