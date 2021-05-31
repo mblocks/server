@@ -17,3 +17,7 @@ class Account(DBBase):
     user_name: Optional[str] = None
     email: Optional[str] = None
     password: Optional[str] = None
+
+
+class AccountLite(DBBase):
+    display_name: Optional[str] = None

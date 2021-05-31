@@ -37,3 +37,10 @@ class UserLite(UserBase, DBBase):
 class UserList(BaseModel):
     data: List[UserLite]
     total: Optional[int] = 0
+
+
+class CurrentUser(BaseModel):
+    id: Optional[int] = None
+    third: Optional[str] = None
+    third_user_id: Optional[str] = None
+    third_user_name: Optional[str] = None
