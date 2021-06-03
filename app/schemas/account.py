@@ -11,8 +11,16 @@ class AccountCreate(AccountLogin):
     email: Optional[str] = None
 
 
-class AccountUpdate(AccountCreate):
-    password: Optional[str] = None
+class AccountUpdate(BaseModel):
+    """
+    just for crud var
+    """
+    pass
+
+
+class AccountChangePassword(BaseModel):
+    password: str
+    new_password: str
 
 
 
