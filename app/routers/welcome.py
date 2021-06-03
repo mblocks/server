@@ -8,8 +8,8 @@ from app.db.cache import generate_apikey
 
 router = APIRouter()
 
-@router.get("/")
-async def get_initdata(settings: config.Settings = Depends(config.get_settings)):
+@router.get("/", response_model=schemas.Welcome)
+async def get_welcome(settings: config.Settings = Depends(config.get_settings)):
     return {
         'logo': 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
         'title': 'Welcome',
@@ -17,7 +17,7 @@ async def get_initdata(settings: config.Settings = Depends(config.get_settings))
     }
 
 
-@router.post("/join")
+@router.post("/join", response_model=schemas.Welcome)
 async def join(response: Response,
                payload: schemas.AccountCreate,
                db: Session = Depends(deps.get_db)):
@@ -32,10 +32,12 @@ async def join(response: Response,
     account = crud.account.create(db=db, obj_in=payload)
     apikey = generate_apikey(account)
     response.set_cookie(key="apikey", value=apikey)
-    return {}
+    res = get_welcome()
+    res['userinfo'] = { 'display_name': account.display_name }
+    return res
 
 
-@router.post("/login")
+@router.post("/login", response_model=schemas.Welcome)
 async def login(response: Response,
                payload: schemas.AccountCreate,
                db: Session = Depends(deps.get_db)):
@@ -59,5 +61,7 @@ async def login(response: Response,
     
     apikey = generate_apikey(find_user)
     response.set_cookie(key="apikey", value=apikey)
-    return {}
+    res = get_welcome()
+    res['userinfo'] = { 'display_name': find_user.display_name }
+    return res
 
