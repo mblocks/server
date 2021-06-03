@@ -1,9 +1,6 @@
 from typing import Optional, List
 from pydantic import BaseModel
-
-
-class Userinfo(BaseModel):
-    display_name: Optional[str] = None
+from .user import Userinfo
 
 
 class Welcome(BaseModel):

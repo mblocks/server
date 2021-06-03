@@ -44,3 +44,11 @@ class CurrentUser(BaseModel):
     third: Optional[str] = None
     third_user_id: Optional[str] = None
     third_user_name: Optional[str] = None
+
+
+class Userinfo(BaseModel):
+    display_name: Optional[str] = None
+    email: Optional[str] = None
+
+    class Config:
+        orm_mode = True
