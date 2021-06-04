@@ -22,7 +22,7 @@ def get_current_user(request: Request):
                       )
 
 def verify_user(request: Request):
-    user_id = request.headers.get('x-consumer-user-id',1)
+    user_id = request.headers.get('x-consumer-user-id')
     if not user_id:
         raise HTTPException(status_code=401, detail="you can not access")
 
