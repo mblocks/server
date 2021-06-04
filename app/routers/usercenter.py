@@ -9,8 +9,10 @@ router = APIRouter()
 
 
 @router.get('/whoami')
-async def whoami(db: Session = Depends(deps.get_db)):
-    return crud.account.get_welcome(db)
+async def whoami(current_user = Depends(deps.get_current_user), 
+                 db: Session = Depends(deps.get_db)):
+    find_user = crud.account.get(db, id=current_user.id)
+    return crud.account.get_welcome(db, user=find_user)
 
 @router.get('/settings/userinfo', response_model=schemas.Userinfo)
 async def get_userinfo(current_user = Depends(deps.get_current_user), 

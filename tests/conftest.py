@@ -4,7 +4,9 @@ import pytest
 from typing import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from fastapi.testclient import TestClient
 from app.db.base_class import Base  # noqa: F401
+from app.main import app
 
 
 database_url = os.getenv("SQLALCHEMY_DATABASE_URI", 'sqlite://')
@@ -32,3 +34,8 @@ def db() -> Generator:
         yield db
     finally:
         db.close()
+
+
+@pytest.fixture(scope="session")
+def client() -> Generator:
+    yield TestClient(app)
