@@ -148,9 +148,9 @@ class User(Base):
 class ThirdUser(Base):
     __tablename__ = "third_users"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    third = Column(String, index=True)
-    third_user_id = Column(String, index=True)
-    third_user_name = Column(String)
+    third = Column(String(100), index=True)
+    third_user_id = Column(String(100), index=True)
+    third_user_name = Column(String(100))
     user_id = Column(Integer)
     binded_at =Column(DateTime,default=datetime.utcnow)
 
