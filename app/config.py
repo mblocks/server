@@ -4,7 +4,7 @@ import sys
 from functools import lru_cache
 from pydantic import BaseSettings
 
-basedir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 # SQLite URI compatible
 WIN = sys.platform.startswith('win')
