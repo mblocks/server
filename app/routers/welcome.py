@@ -8,17 +8,10 @@ from app.db.cache import generate_apikey
 
 router = APIRouter()
 
-def get_welcome():
-    return {
-        'logo': 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
-        'title': 'Welcome',
-        'description': 'Hello'
-    }
-
 
 @router.get("/", response_model=schemas.Welcome)
-async def index(settings: config.Settings = Depends(config.get_settings)):
-    return get_welcome()
+async def index(db: Session = Depends(deps.get_db)):
+    return crud.account.get_welcome(db)
 
 @router.post("/join", response_model=schemas.Welcome)
 async def join(response: Response,
@@ -35,9 +28,7 @@ async def join(response: Response,
     account = crud.account.create(db=db, obj_in=payload)
     apikey = generate_apikey(account)
     response.set_cookie(key="apikey", value=apikey)
-    res = get_welcome()
-    res['userinfo'] = schemas.Userinfo(display_name=account.display_name)
-    return res
+    return crud.get_welcome(db, user=account)
 
 @router.post("/login", response_model=schemas.Welcome)
 async def login(response: Response,
@@ -63,7 +54,6 @@ async def login(response: Response,
     
     apikey = generate_apikey(find_user)
     response.set_cookie(key="apikey", value=apikey)
-    res = get_welcome()
-    res['userinfo'] = schemas.Userinfo(display_name=find_user.display_name)
-    return res
+    return crud.account.get_welcome(db, user=find_user)
+
 

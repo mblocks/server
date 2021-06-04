@@ -9,15 +9,8 @@ router = APIRouter()
 
 
 @router.get('/whoami')
-async def whoami(settings: config.Settings = Depends(config.get_settings)):
-    return {
-        'logo': 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
-        'title': 'Welcome',
-        'description': 'Hello2',
-        'userinfo':{
-            'user_name':'myname'
-        }
-    }
+async def whoami(db: Session = Depends(deps.get_db)):
+    return crud.account.get_welcome(db)
 
 @router.get('/settings/userinfo', response_model=schemas.Userinfo)
 async def get_userinfo(current_user = Depends(deps.get_current_user), 
