@@ -28,7 +28,7 @@ async def join(response: Response,
     account = crud.account.create(db=db, obj_in=payload)
     apikey = generate_apikey(account)
     response.set_cookie(key="apikey", value=apikey)
-    return crud.get_welcome(db, user=account)
+    return crud.account.get_welcome(db, user=account)
 
 @router.post("/login", response_model=schemas.Welcome)
 async def login(response: Response,
