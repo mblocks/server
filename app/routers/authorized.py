@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import List
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
-from app import deps, utils
+from app import deps
 from app.db import cache
 
 
