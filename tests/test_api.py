@@ -2,19 +2,19 @@
 
 
 def test_read_main(client):
-    response = client.get("/")
+    response = client.get("/welcome/")
     assert response.status_code == 200
 
 def test_join(client):
     response = client.post(
-        "/join",
+        "/welcome/join",
         json={"user_name": "test_user_name", "password": "123456"},
     )
     assert response.status_code == 200
 
 def test_login(client):
     response = client.post(
-        "/login",
+        "/welcome/login",
         json={"user_name": "test_user_name", "password": "123456"},
     )
     assert response.status_code == 200
