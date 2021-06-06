@@ -11,7 +11,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(routers.admin, tags=["admin"], prefix='/admin', dependencies=[ Depends(deps.verify_user) ])
 app.include_router(routers.welcome, tags=["welcome"], prefix='/welcome')
 app.include_router(routers.usercenter, tags=["usercenter"])
 app.include_router(routers.authorized, tags=["authorized"])
-app.include_router(routers.admin, tags=["admin"], prefix='/admin', dependencies=[ Depends(deps.verify_user) ])
