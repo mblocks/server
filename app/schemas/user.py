@@ -18,6 +18,7 @@ class UserBase(BaseModel):
 
 
 class UserUpdate(UserBase):
+    password: Optional[str] = None
     apps: List[AppRoles] = []
 
 
