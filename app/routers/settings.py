@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app import config, deps, schemas
+from app import deps, schemas
 from app.utils import verify_password
 from app.db import crud
 
