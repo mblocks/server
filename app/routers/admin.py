@@ -213,7 +213,7 @@ async def create_user(payload: schemas.UserCreate,
         ])
     user = crud.user.create(db=db, obj_in=payload)
     created_user = crud.user.get_multi_with_roles(db, id=user.id)
-    background_tasks.add_task(utils.sync_authorized, user=created_user)
+    background_tasks.add_task(cache.set_authorized, user=created_user)
     return created_user
 
 
