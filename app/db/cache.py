@@ -19,6 +19,7 @@ def generate_apikey(current_user) -> str:
     pipe.zadd(key_users_sessions.format(current_user.id),{apikey:time.time()})
     pipe.set(key_users.format(current_user.id), json.dumps({
         'id': current_user.id,
+        'is_admin': current_user.is_admin,
         'third': current_user.third if hasattr(current_user,'third')  else '',
         'third_user_id': current_user.third_user_id if hasattr(current_user,'third_user_id') else '',
         'third_user_name': current_user.third_user_name if hasattr(current_user,'third_user_name') else '',

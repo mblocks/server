@@ -15,17 +15,15 @@ def get_db():
         db.close()
 
 def get_current_user(request: Request):
-    return CurrentUser(id=request.headers.get('x-consumer-user-id'),
+    return CurrentUser(id=request.headers.get('x-consumer-id'),
                        third=request.headers.get('x-consumer-third'),
                        third_user_id=request.headers.get('x-consumer-third-user-id'),
                        third_user_name=request.headers.get('x-consumer-third-user-name','').encode("Latin-1").decode("utf-8"),
                       )
 
 def verify_user(request: Request):
-    user_id = request.headers.get('x-consumer-user-id')
-    if not user_id:
-        raise HTTPException(status_code=401, detail="you can not access")
-
-    if '1' not in get_authorized(user_id=user_id):
+    user_id = request.headers.get('x-consumer-id')
+    if request.headers.get('x-consumer-is-admin') != 'true' and '1' not in get_authorized(user_id=user_id):
         raise HTTPException(status_code=403, detail="you can not access")
+
 

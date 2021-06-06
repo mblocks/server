@@ -128,6 +128,7 @@ class User(Base):
     display_name = Column(String(100))
     enabled = Column(Boolean, default=True)
     _password = Column("password",String(100))
+    is_admin = Column(Boolean, default=True)
 
     @property
     def password(self):
