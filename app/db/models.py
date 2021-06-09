@@ -14,6 +14,7 @@ class App(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), unique=True, index=True)
+    path = Column(String(100), unique=True)
     title = Column(String(100))
     description = Column(String(100))
     enabled = Column(Boolean, default=True)
@@ -38,7 +39,7 @@ class Service(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     parent_id = Column(Integer, index=True)
-    name = Column(String(100), unique=True, index=True)
+    name = Column(String(100), index=True)
     title = Column(String(100))
     image = Column(String(100))
     container_id = Column(String(100))
