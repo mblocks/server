@@ -18,7 +18,7 @@ class App(Base):
     title = Column(String(100))
     description = Column(String(100))
     enabled = Column(Boolean, default=True)
-    endpoint = Column(String(200))
+    entrypoint = Column(String(200))
 
     data_enabled = Column(Boolean, default=True)
     data_created_at = Column(DateTime,default=datetime.utcnow)

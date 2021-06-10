@@ -12,7 +12,7 @@ class AppBase(BaseModel):
     path: Optional[str] = None
     description: Optional[str] = None
     enabled: Optional[bool] = True
-    endpoint: Optional[str] = None
+    entrypoint: Optional[str] = None
 
 
 class AppCreate(AppBase):
