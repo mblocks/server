@@ -1,5 +1,4 @@
 import logging
-import docker
 from app import schemas
 from app.db.session import SessionLocal
 from app.db import crud
@@ -7,21 +6,15 @@ from app.db import crud
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-client = docker.from_env()
 
 
 def init() -> None:
     db = SessionLocal()
-    for item in client.containers.list(filters={'ancestor': 'mblocks/server'}):
-        network = list(item.attrs['NetworkSettings']['Networks'].keys())[0]
-        server_ip = item.attrs['NetworkSettings']['Networks'][network]['IPAddress']
-
     if crud.app.count(db, search={}) == 0:
         crud.app.create(db=db, obj_in=schemas.AppCreate.parse_obj({
             'name': 'server',
             'title': 'server',
             'path': '/',
-            'entrypoint': 'http://{}'.format(server_ip),
             'services': [
                             {   
                                 'name': 'main',

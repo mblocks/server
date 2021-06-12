@@ -28,6 +28,7 @@ class ServiceUpdate(ServiceBase):
 class Service(ServiceBase, DBBase):
     container_id: Optional[str] = None
     ip: Optional[str] = None
+    network: Optional[str] = None
     status: Optional[str] = None
 
 

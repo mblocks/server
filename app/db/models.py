@@ -43,6 +43,7 @@ class Service(Base):
     title = Column(String(100))
     image = Column(String(100))
     container_id = Column(String(100))
+    network = Column(String(100))
     ip = Column(String(100))
     _environment = Column("environment",String(400))
 
