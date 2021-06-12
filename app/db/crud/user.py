@@ -72,6 +72,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             'id':find_user.id,
             'user_name': find_user.user_name,
             'email': find_user.email,
+            'enabled': find_user.enabled,
             'apps': list(apps.values())
         }
 

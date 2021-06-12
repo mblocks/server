@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 from .service import Service, ServiceLite, ServiceCreate
 from .base import DBBase
 from .role import RoleLite
@@ -9,9 +9,10 @@ from .role import RoleLite
 class AppBase(BaseModel):
     name: Optional[str] = None
     title: Optional[str] = None
+    path: Optional[str] = None
     description: Optional[str] = None
     enabled: Optional[bool] = True
-    endpoint: Optional[str] = None
+    entrypoint: Optional[str] = None
 
 
 class AppCreate(AppBase):

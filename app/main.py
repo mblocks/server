@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from . import routers
+from . import routers, deps
 
 app = FastAPI()
 app.add_middleware(
@@ -11,5 +11,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(routers.welcome, tags=["welcome"])
-app.include_router(routers.admin, tags=["admin"], prefix='/admin')
+app.include_router(routers.admin, tags=["admin"], prefix='/admin', dependencies=[ Depends(deps.verify_user) ])
+app.include_router(routers.welcome, tags=["welcome"], prefix='/welcome')
+app.include_router(routers.settings, tags=["settings"])
+app.include_router(routers.authorized, tags=["authorized"])

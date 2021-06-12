@@ -18,6 +18,7 @@ class UserBase(BaseModel):
 
 
 class UserUpdate(UserBase):
+    password: Optional[str] = None
     apps: List[AppRoles] = []
 
 
@@ -37,3 +38,19 @@ class UserLite(UserBase, DBBase):
 class UserList(BaseModel):
     data: List[UserLite]
     total: Optional[int] = 0
+
+
+class CurrentUser(BaseModel):
+    id: Optional[int] = None
+    third: Optional[str] = None
+    third_user_id: Optional[str] = None
+    third_user_name: Optional[str] = None
+    is_admin: Optional[bool] = True
+
+
+class Userinfo(BaseModel):
+    display_name: Optional[str] = None
+    email: Optional[str] = None
+
+    class Config:
+        orm_mode = True

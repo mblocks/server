@@ -14,10 +14,11 @@ class App(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), unique=True, index=True)
+    path = Column(String(100), unique=True)
     title = Column(String(100))
     description = Column(String(100))
     enabled = Column(Boolean, default=True)
-    endpoint = Column(String(200))
+    entrypoint = Column(String(200))
 
     data_enabled = Column(Boolean, default=True)
     data_created_at = Column(DateTime,default=datetime.utcnow)
@@ -38,10 +39,11 @@ class Service(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     parent_id = Column(Integer, index=True)
-    name = Column(String(100), unique=True, index=True)
+    name = Column(String(100), index=True)
     title = Column(String(100))
     image = Column(String(100))
     container_id = Column(String(100))
+    network = Column(String(100))
     ip = Column(String(100))
     _environment = Column("environment",String(400))
 
@@ -125,8 +127,10 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_name = Column(String(100), unique=True, index=True)
     email = Column(String(100), index=True)
+    display_name = Column(String(100))
     enabled = Column(Boolean, default=True)
     _password = Column("password",String(100))
+    is_admin = Column(Boolean, default=True)
 
     @property
     def password(self):
@@ -142,3 +146,14 @@ class User(Base):
                         secondary='authorized',
                         viewonly=True
                         )
+
+
+class ThirdUser(Base):
+    __tablename__ = "third_users"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    third = Column(String(100), index=True)
+    third_user_id = Column(String(100), index=True)
+    third_user_name = Column(String(100))
+    user_id = Column(Integer)
+    binded_at =Column(DateTime,default=datetime.utcnow)
+

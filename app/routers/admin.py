@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
-from app import deps, config, schemas
-from app.db import crud
+from app import deps, config, schemas, utils
+from app.db import crud, cache
 
 router = APIRouter()
 
@@ -106,20 +106,28 @@ async def query_app_roles(app_id: int,
 @router.post("/apps/{app_id}/roles", response_model=schemas.Role)
 async def create_app_role(app_id: int,
                           payload: schemas.RoleCreate,
+                          background_tasks: BackgroundTasks,
                           db: Session = Depends(deps.get_db)
                           ):
     payload.parent_id = app_id
-    return crud.role.create(db=db, obj_in=payload)
+    find_app = crud.app.get(db, id=app_id)
+    created_role = crud.role.create(db=db, obj_in=payload)
+    background_tasks.add_task(cache.set_role, app=find_app, role=created_role)
+    return created_role
 
 
 @router.post("/apps/{app_id}/roles/{role_id}", response_model=schemas.Role)
 async def update_app_role(app_id: int,
                           role_id: int,
                           payload: schemas.RoleUpdate,
+                          background_tasks: BackgroundTasks,
                           db: Session = Depends(deps.get_db)
                           ):
+    find_app = crud.app.get(db, id=app_id)
     find_role = crud.role.get(db, id=role_id)
-    return crud.role.update(db=db, db_obj=find_role, obj_in=payload)
+    updated_role = crud.role.update(db=db, db_obj=find_role, obj_in=payload)
+    background_tasks.add_task(cache.set_role, app=find_app, role=updated_role)
+    return updated_role
 
 
 @router.post("/apps/{app_id}/roles/{role_id}/delete", response_model=schemas.Role)
@@ -127,7 +135,9 @@ async def delete_app_role(app_id: int,
                           role_id: int,
                           db: Session = Depends(deps.get_db)
                           ):
-    return crud.role.remove(db=db, id=role_id)
+    deleded_role = crud.role.remove(db=db, id=role_id)
+    background_tasks.add_task(cache.del_role, role_id=role_id)
+    return deleded_role
 
 
 @router.post("/apps/{app_id}/services", response_model=schemas.Service)
@@ -189,8 +199,9 @@ async def get_user(user_id: int, db: Session = Depends(deps.get_db)):
 
 
 @router.post("/users", response_model=schemas.User)
-async def create_app(payload: schemas.UserCreate,
-                     db: Session = Depends(deps.get_db)
+async def create_user(payload: schemas.UserCreate,
+                      background_tasks: BackgroundTasks,
+                      db: Session = Depends(deps.get_db)
                      ):
     if crud.user.count(db, search={'user_name': payload.user_name}) > 0:
         raise HTTPException(status_code=422, detail=[
@@ -201,20 +212,29 @@ async def create_app(payload: schemas.UserCreate,
             },
         ])
     user = crud.user.create(db=db, obj_in=payload)
-    return crud.user.get_multi_with_roles(db, id=user.id)
+    created_user = crud.user.get_multi_with_roles(db, id=user.id)
+    background_tasks.add_task(cache.set_authorized, user=created_user)
+    return created_user
 
 
 @router.post("/users/{user_id}", response_model=schemas.User)
-async def create_user(user_id: int,
+async def update_user(user_id: int,
+                      background_tasks: BackgroundTasks,
                       payload: schemas.UserUpdate,
-                      db: Session = Depends(deps.get_db)
+                      db: Session = Depends(deps.get_db),
                       ):
     find_user = crud.user.get(db=db, id=user_id)
-    return crud.user.update(db=db, db_obj=find_user, obj_in=payload)
+    crud.user.update(db=db, db_obj=find_user, obj_in=payload)
+    updated_user = crud.user.get_multi_with_roles(db, id=user_id)
+    background_tasks.add_task(cache.set_authorized, user=updated_user)
+    return updated_user
 
 
 @router.post("/users/{user_id}/delete", response_model=schemas.User)
 async def delete_user(user_id: int,
+                      background_tasks: BackgroundTasks,
                       db: Session = Depends(deps.get_db)
                       ):
-    return crud.user.remove(db=db, id=user_id)
+    deleted_user = crud.user.remove(db=db, id=user_id)
+    background_tasks.add_task(cache.del_authorized, user_id=user_id)
+    return deleted_user

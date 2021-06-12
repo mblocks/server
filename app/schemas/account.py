@@ -1,19 +1,26 @@
 from typing import Optional
 from pydantic import BaseModel
-from .base import DBBase
 
-
-class AccountCreate(BaseModel):
+class AccountLogin(BaseModel):
     user_name: str
     password: str
 
 
+class AccountCreate(AccountLogin):
+    display_name: Optional[str] = None
+    email: Optional[str] = None
+
+
 class AccountUpdate(BaseModel):
-    email: Optional[str] = None
-    password: Optional[str] = None
+    """
+    just for crud var
+    """
+    pass
 
 
-class Account(DBBase):
-    user_name: Optional[str] = None
-    email: Optional[str] = None
-    password: Optional[str] = None
+class AccountChangePassword(BaseModel):
+    password: str
+    new_password: str
+
+
+
