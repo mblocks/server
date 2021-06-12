@@ -33,7 +33,12 @@ class Settings(BaseSettings):
         case_sensitive: bool = True
         env_file: bool = ".env"
 
+class Production(Settings):
+    SQLALCHEMY_DATABASE_URI: str = os.getenv("SQLALCHEMY_DATABASE_URI","sqlite://///mblocks/server/data.db")
+
 
 @lru_cache()
 def get_settings():
+    if os.getenv("FASTAPI_CONFIG") == 'production':
+        return Production()
     return Settings()
