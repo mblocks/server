@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from app import deps, config, schemas, utils
 from app.db import crud, cache
+from scripts.initial_services import refresh_apps
 
 router = APIRouter()
 
@@ -25,6 +26,7 @@ async def query_apps(db: Session = Depends(deps.get_db),
 
 @router.post("/apps", response_model=schemas.App)
 async def create_app(payload: schemas.AppCreate,
+                     background_tasks: BackgroundTasks,
                      db: Session = Depends(deps.get_db)
                      ):
     if crud.app.count(db, search={'name': payload.name}) > 0:
@@ -35,6 +37,7 @@ async def create_app(payload: schemas.AppCreate,
                 "type": "value_error"
             },
         ])
+    background_tasks.add_task(refresh_apps)
     return crud.app.create(db=db, obj_in=payload)
 
 
