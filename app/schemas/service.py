@@ -14,6 +14,7 @@ class ServiceBase(BaseModel):
     image: Optional[str] = None
     environment: List[Environment] = []
     parent_id: Optional[int] = None
+    version: Optional[int] = None
 
 
 class ServiceCreate(ServiceBase):

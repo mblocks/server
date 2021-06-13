@@ -136,6 +136,7 @@ async def update_app_role(app_id: int,
 @router.post("/apps/{app_id}/roles/{role_id}/delete", response_model=schemas.Role)
 async def delete_app_role(app_id: int,
                           role_id: int,
+                          background_tasks: BackgroundTasks,
                           db: Session = Depends(deps.get_db)
                           ):
     deleded_role = crud.role.remove(db=db, id=role_id)
@@ -146,6 +147,7 @@ async def delete_app_role(app_id: int,
 @router.post("/apps/{app_id}/services", response_model=schemas.Service)
 async def create_app_service(app_id: int,
                              payload: schemas.ServiceCreate,
+                             background_tasks: BackgroundTasks,
                              db: Session = Depends(deps.get_db)
                              ):
     if crud.service.count(db, search={'parent_id': app_id, 'name': payload.name}) > 0:
@@ -157,6 +159,7 @@ async def create_app_service(app_id: int,
             },
         ])
     payload.parent_id = app_id
+    background_tasks.add_task(refresh_apps)
     return crud.service.create(db=db, obj_in=payload)
 
 
@@ -164,9 +167,11 @@ async def create_app_service(app_id: int,
 async def update_app_service(app_id: int,
                              service_id: int,
                              payload: schemas.ServiceUpdate,
+                             background_tasks: BackgroundTasks,
                              db: Session = Depends(deps.get_db)
                              ):
     find_service = crud.service.get(db, id=service_id)
+    background_tasks.add_task(refresh_apps)
     return crud.service.update(db=db, db_obj=find_service, obj_in=payload)
 
 

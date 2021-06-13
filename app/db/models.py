@@ -45,6 +45,7 @@ class Service(Base):
     container_id = Column(String(100))
     network = Column(String(100))
     ip = Column(String(100))
+    version = Column(Integer, default=1)
     _environment = Column("environment",String(400))
 
     data_enabled = Column(Boolean, default=True)
