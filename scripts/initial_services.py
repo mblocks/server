@@ -30,18 +30,23 @@ except docker.errors.NotFound:
     ipam_config = docker.types.IPAMConfig(pool_configs=[ipam_pool])
     client.api.create_network(network,ipam=ipam_config)
 
-server = crud.app.get(db, id=1) # get server app
-server_ip = '172.16.0.1'
+server = crud.app.get(db, id=1)
+for item in server.services:
+    if item.name != 'main':
+        continue
+    server_main = item # find server main service
+
+server_ip = '172.16.0.2'
 server_exists_network = False
 for item in client.containers.list(filters={'ancestor': 'mblocks/server'}):
-    server_id = item.id
-    if item.name != '{}-{}-{}-{}'.format(container_name_prefix, server.stack, server.name, server.version):
-        item.rename('{}-{}-{}-{}'.format(container_name_prefix, server.stack, server.name, server.version))
+    server_main.container_id = item.id
+    if item.name != '{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version):
+        item.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
     if network in item.attrs['NetworkSettings']['Networks']:
         server_exists_network = True
 
 if not server_exists_network:
-    client.api.connect_container_to_network(server_id,network,ipv4_address=server_ip)
+    client.api.connect_container_to_network(server_main.container_id,network,ipv4_address=server_ip)
 
 
 def deploy_stack(client, *, network, stack,prefix: str):
