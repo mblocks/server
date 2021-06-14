@@ -36,17 +36,16 @@ for item in server.services:
         continue
     server_main = item # find server main service
 
-server_ip = '172.16.0.2'
-server_exists_network = False
-for item in client.containers.list(filters={'ancestor': 'mblocks/server'}):
-    server_main.container_id = item.id
-    if item.name != '{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version):
+server_main.ip = '172.16.0.2'
+if server_main.container_id == '':
+    """
+    When server first boot, Server main container_id is empty.
+    Rename it, Join network.
+    """
+    for item in client.containers.list(filters={'ancestor': 'mblocks/server'}):
+        server_main.container_id = item.id
         item.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
-    if network in item.attrs['NetworkSettings']['Networks']:
-        server_exists_network = True
-
-if not server_exists_network:
-    client.api.connect_container_to_network(server_main.container_id,network,ipv4_address=server_ip)
+    client.api.connect_container_to_network(server_main.container_id,network,ipv4_address=server_main.ip)
 
 
 def deploy_stack(client, *, network, stack,prefix: str):
