@@ -36,12 +36,12 @@ for item in server.services:
         continue
     server_main = item # find server main service
 
-server_main.ip = '172.16.0.2'
 if server_main.container_id == '':
     """
     When server first boot, Server main container_id is empty.
     Rename it, Join network.
     """
+    server_main.ip = '172.16.0.2'
     for item in client.containers.list(filters={'ancestor': 'mblocks/server'}):
         server_main.container_id = item.id
         item.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
