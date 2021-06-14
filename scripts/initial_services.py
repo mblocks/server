@@ -36,7 +36,7 @@ for item in server.services:
         continue
     server_main = item # find server main service
 
-if server_main.container_id == '':
+if not server_main.container_id:
     """
     When server first boot, Server main container_id is empty.
     Rename it, Join network.
