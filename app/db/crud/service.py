@@ -12,7 +12,7 @@ class CRUDService(CRUDBase[Service, ServiceCreate, ServiceUpdate]):
         db_obj: Service,
         obj_in: ServiceUpdate
     ) -> Service:
-        obj_in.version =db_obj.version + 1
+        obj_in.version = db_obj.version + 1
         return super().update(db, db_obj=db_obj, obj_in=obj_in)
 
 
