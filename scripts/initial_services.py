@@ -30,12 +30,13 @@ except docker.errors.NotFound:
     ipam_config = docker.types.IPAMConfig(pool_configs=[ipam_pool])
     client.api.create_network(network,ipam=ipam_config)
 
+server = crud.app.get(db, id=1) # get server app
 server_ip = '172.16.0.1'
 server_exists_network = False
 for item in client.containers.list(filters={'ancestor': 'mblocks/server'}):
     server_id = item.id
-    if item.name != '{}-{}-{}'.format(container_name_prefix, 'server', 'main'):
-        item.rename('{}-{}-{}'.format(container_name_prefix, 'server', 'main'))
+    if item.name != '{}-{}-{}-{}'.format(container_name_prefix, server.stack, server.name, server.version):
+        item.rename('{}-{}-{}-{}'.format(container_name_prefix, server.stack, server.name, server.version))
     if network in item.attrs['NetworkSettings']['Networks']:
         server_exists_network = True
 
@@ -55,7 +56,7 @@ def deploy_stack(client, *, network, stack,prefix: str):
 
     # create container if not exists
     for item in stack.services:
-        item_container_name = '{}-{}-{}'.format(prefix, stack.name, item.name)
+        item_container_name = '{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version)
         try:
             item_container = client.containers.get(item_container_name)
             if item_container.status == 'exited':
@@ -81,10 +82,17 @@ def deploy_stack(client, *, network, stack,prefix: str):
                                                         )
             client.api.start(container=container_id)
 
+        try:
+            item_pre_container = client.containers.get('{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
+            item_pre_container.rename('{}-delete-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
+        except docker.errors.NotFound:
+            pass
+
+
     # get stack's container ip adress
     for item in client.containers.list(all=True, filters={'name': '{}-{}-'.format(prefix, stack.name)}):
         # get container's ip
-        stack_status[item.name.replace('{}-{}-'.format(prefix, stack.name), '')] = {
+        stack_status[item.name.split('-')[2]] = {
             'ip':item.attrs['NetworkSettings']['Networks'][network]['IPAddress'],
             'container_id':item.id
         }
@@ -124,6 +132,9 @@ def refresh_apps():
 
     time.sleep(3)
     requests.post(('http://server-gateway:8001/config'), json=kong_config)
+
+    for item in client.containers.list(all=True, filters={'name': '{}-delete-'.format(container_name_prefix)}):
+       item.remove(force=True)
 
 
 def main() -> None:
