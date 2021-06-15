@@ -1,6 +1,7 @@
 import logging
 import time
 import docker
+from docker.types import Mount
 import requests
 from app.db.session import SessionLocal
 from app.db import crud
@@ -14,7 +15,7 @@ client = docker.from_env()
 db = SessionLocal()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-network = 'mblocks'
+network = settings.CONTAINER_NETWORK
 
 try:
     client.networks.get(network)
@@ -44,7 +45,9 @@ if not server_main.container_id:
     server_main.ip = '172.16.0.2'
     for item in client.containers.list(filters={'ancestor': 'mblocks/server'}):
         server_main.container_id = item.id
+        server_main.volumes = [{'name':item_volume.split(':')[0],'value':item_volume.split(':')[1]} for item_volume in item.attrs['HostConfig']['Binds']]
         item.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
+        db.commit()
     client.api.connect_container_to_network(server_main.container_id,network,ipv4_address=server_main.ip)
 
 
@@ -72,10 +75,14 @@ def deploy_stack(client, *, network, stack,prefix: str):
                 'host_config':client.api.create_host_config(port_bindings={80:80}) if stack.name =='server' and item.name == 'gateway' else {},
                 'environment':{item_env.get('name'):item_env.get('value') for item_env in item.environment } # translate list of object to dict
             }
+            if stack.name =='server' and item.name == 'main':
+                #item_settings['volumes'] = [item_volume.get('value') for item_volume in item.volumes]
+                item_settings['host_config'] = client.api.create_host_config(mounts=[Mount(target=item_volume.get('value'),source=item_volume.get('name'),type="bind") for item_volume in item.volumes])
+            """
             if item_image.attrs['Config']['Volumes']:
                 for item_image_volume in item_image.attrs['Config']['Volumes'].keys():
                     item_settings['volumes'] = {'/mblocks/{}/{}{}'.format(stack.name, item.name, item_image_volume): {'bind': item_image_volume, 'mode': 'rw'}}
-
+            """
             item_endpoint_config =  client.api.create_endpoint_config(aliases=['{}-{}'.format(stack.name, item.name)])
             item_network_config = { network:item_endpoint_config }
             container_id  = client.api.create_container(item.image,
