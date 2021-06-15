@@ -46,7 +46,8 @@ class Service(Base):
     network = Column(String(100))
     ip = Column(String(100))
     version = Column(Integer, default=1)
-    _environment = Column("environment",String(400))
+    _environment = Column("environment",String(400),default='[]')
+    _volumes = Column("volumes",String(400),default='[]')
 
     data_enabled = Column(Boolean, default=True)
     data_created_at = Column(DateTime,default=datetime.utcnow)
@@ -64,6 +65,15 @@ class Service(Base):
     def environment(self, value):
         # https://docs.sqlalchemy.org/en/14/orm/mapped_attributes.html#using-custom-datatypes-at-the-core-level
         self._environment = json.dumps(jsonable_encoder(value))
+
+    @property
+    def volumes(self):
+        return json.loads(self._volumes)
+
+    @volumes.setter
+    def volumes(self, value):
+        # https://docs.sqlalchemy.org/en/14/orm/mapped_attributes.html#using-custom-datatypes-at-the-core-level
+        self._volumes = json.dumps(jsonable_encoder(value))
 
 
 class Role(Base):

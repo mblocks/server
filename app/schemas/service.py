@@ -7,12 +7,16 @@ class Environment(BaseModel):
     name: str
     value: str
 
+class Volume(Environment):
+    pass
+
 
 class ServiceBase(BaseModel):
     name: Optional[str] = None
     title: Optional[str] = None
     image: Optional[str] = None
     environment: List[Environment] = []
+    volumes: List[Volume] = []
     parent_id: Optional[int] = None
     version: Optional[int] = None
 
