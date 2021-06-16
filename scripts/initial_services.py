@@ -63,6 +63,14 @@ def deploy_stack(client, *, network, stack,prefix: str):
 
     # create container if not exists
     for item in stack.services:
+        try:
+            item_pre_container = client.containers.get('{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
+            item_pre_container.rename('{}-delete-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
+            if stack.name == 'server' and item.name == 'gateway':
+                item_pre_container.stop()
+        except docker.errors.NotFound:
+            pass
+
         item_container_name = '{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version)
         try:
             item_container = client.containers.get(item_container_name)
@@ -93,12 +101,6 @@ def deploy_stack(client, *, network, stack,prefix: str):
                                                         )
             client.api.start(container=container_id)
 
-        try:
-            item_pre_container = client.containers.get('{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
-            item_pre_container.rename('{}-delete-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
-        except docker.errors.NotFound:
-            pass
-
 
     # get stack's container ip adress
     for item in client.containers.list(all=True, filters={'name': '{}-{}-'.format(prefix, stack.name)}):
@@ -116,9 +118,9 @@ def deploy_stack(client, *, network, stack,prefix: str):
     return {'name':stack.name,'url':stack.entrypoint,'routes':[{'paths':[stack.path]}]}
 
 
-def refresh_apps():
+def refresh_apps(apps):
     gateway_services = []
-    for app in crud.app.get_multi(db=db,search={}):
+    for app in apps:
         gateway_services.append(deploy_stack(client=client,network=network,stack=app,prefix=container_name_prefix))
     db.commit()
     
@@ -150,7 +152,8 @@ def refresh_apps():
 
 def main() -> None:
     logger.info("Creating initial services")
-    refresh_apps()
+    apps = crud.app.get_multi(db=db,search={})
+    refresh_apps(apps)
     logger.info("Initial services created")
 
 

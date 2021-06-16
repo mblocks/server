@@ -37,8 +37,9 @@ async def create_app(payload: schemas.AppCreate,
                 "type": "value_error"
             },
         ])
-    background_tasks.add_task(refresh_apps)
-    return crud.app.create(db=db, obj_in=payload)
+    created_app = crud.app.create(db=db, obj_in=payload)
+    background_tasks.add_task(refresh_apps, crud.app.get_multi(db=db,search={}))
+    return created_app
 
 
 @router.get("/apps/roles")
@@ -159,8 +160,9 @@ async def create_app_service(app_id: int,
             },
         ])
     payload.parent_id = app_id
-    background_tasks.add_task(refresh_apps)
-    return crud.service.create(db=db, obj_in=payload)
+    created_service = crud.service.create(db=db, obj_in=payload)
+    background_tasks.add_task(refresh_apps, crud.app.get_multi(db=db,search={}))
+    return created_service
 
 
 @router.post("/apps/{app_id}/services/{service_id}", response_model=schemas.Service)
@@ -171,8 +173,9 @@ async def update_app_service(app_id: int,
                              db: Session = Depends(deps.get_db)
                              ):
     find_service = crud.service.get(db, id=service_id)
-    background_tasks.add_task(refresh_apps)
-    return crud.service.update(db=db, db_obj=find_service, obj_in=payload)
+    updated_service = crud.service.update(db=db, db_obj=find_service, obj_in=payload)
+    background_tasks.add_task(refresh_apps, crud.app.get_multi(db=db,search={}))
+    return updated_service
 
 
 @router.post("/apps/{app_id}/services/{service_id}/delete", response_model=schemas.Service)
