@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import secrets
-import time
-import json
 from passlib.context import CryptContext
-from app.db.session import redis_client
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
