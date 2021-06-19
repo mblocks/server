@@ -1,35 +1,22 @@
 import logging
 import time
-import docker
-from docker.types import Mount
 import requests
+from pathlib import Path
 from app.db.session import SessionLocal
 from app.db import crud
+from app.services import docker
 from app.config import get_settings
 
 
 settings = get_settings()
 container_name_prefix = settings.CONTAINER_NAME_PREFIX
-client = docker.from_env()
-#client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+network = settings.CONTAINER_NETWORK
 db = SessionLocal()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-network = settings.CONTAINER_NETWORK
 
-try:
-    client.networks.get(network)
-except docker.errors.NotFound:
-    ipam_pool = docker.types.IPAMPool(
-        subnet='172.16.0.0/16',
-        iprange='172.16.0.0/24',
-        gateway='172.16.0.254',
-        aux_addresses={
-            'server-main':'172.16.0.1'
-        } # exclude some ip has allocated
-    )
-    ipam_config = docker.types.IPAMConfig(pool_configs=[ipam_pool])
-    client.api.create_network(network,ipam=ipam_config)
+if docker.get_network(network) is None:
+    docker.create_network(network, subnet='172.16.0.0/16', iprange='172.16.0.0/24', gateway='172.16.0.254')
 
 server = crud.app.get(db, id=1)
 for item in server.services:
@@ -42,86 +29,66 @@ if not server_main.container_id:
     When server first boot, Server main container_id is empty.
     Rename it, Join network.
     """
-    server_main.ip = '172.16.0.2'
-    for item in client.containers.list(filters={'ancestor': 'mblocks/server'}):
-        server_main.container_id = item.id
-        server_main.volumes = [{'name':item_volume.split(':')[0],'value':item_volume.split(':')[1]} for item_volume in item.attrs['HostConfig']['Binds']]
-        item.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
-        db.commit()
-    client.api.connect_container_to_network(server_main.container_id,network,ipv4_address=server_main.ip)
+    server_main_container = docker.get_container(image='mblocks/server')
+    server_main.ip = '172.16.0.1'
+    server_main.container_id = server_main_container.id
+    server_main.volumes = [{'name':item_volume.split(':')[0],'value':item_volume.split(':')[1]} for item_volume in server_main_container.attrs['HostConfig']['Binds']]
+    server_main_container.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
+    docker.connect_network(container=server_main_container.id, network = network, ip= server_main.ip)
+    db.commit()
 
+host_volume_path = None
+for item in server_main.volumes:
+    if item.get('value') == '/mblocks':
+        host_volume_path = item.get('name')
 
-def deploy_stack(client, *, network, stack,prefix: str):
-    stack_status = {}
+def deploy_stack(*, stack, prefix: str):
     # prepare images
     for item in [v.image for v in stack.services]:
-        try:
-            client.images.get(item)
-        except docker.errors.ImageNotFound:
-            for line in client.api.pull(item, stream=True, decode=True):
-                print(line)
+        docker.get_image(item)
 
     # create container if not exists
     for item in stack.services:
-        try:
-            item_pre_container = client.containers.get('{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
+        item_pre_container = docker.get_container(name='{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
+        if item_pre_container:
             item_pre_container.rename('{}-delete-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
             if stack.name == 'server' and item.name == 'gateway':
                 item_pre_container.stop()
-        except docker.errors.NotFound:
-            pass
 
         item_container_name = '{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version)
-        try:
-            item_container = client.containers.get(item_container_name)
-            if item_container.status == 'exited':
-                item_container.start()
-        except docker.errors.NotFound:
-            item_image = client.images.get(item.image)
-            item_settings = {
-                'ports':[80] if stack.name =='server' and item.name == 'gateway' else [],
-                'host_config':client.api.create_host_config(port_bindings={80:80}) if stack.name =='server' and item.name == 'gateway' else {},
+        item_container = docker.get_container(name=item_container_name)
+        if item_container:
+            item_container.status == 'exited' and item_container.start()
+        else:
+            item_image = docker.get_image(item.image)
+            item_config = {
+                'network': network,
+                'aliases': ['{}-{}'.format(stack.name, item.name)],
                 'environment':{item_env.get('name'):item_env.get('value') for item_env in item.environment } # translate list of object to dict
             }
-            if stack.name =='server' and item.name == 'main':
-                #item_settings['volumes'] = [item_volume.get('value') for item_volume in item.volumes]
-                item_settings['host_config'] = client.api.create_host_config(mounts=[Mount(target=item_volume.get('value'),source=item_volume.get('name'),type="bind") for item_volume in item.volumes])
-            """
-            if item_image.attrs['Config']['Volumes']:
-                for item_image_volume in item_image.attrs['Config']['Volumes'].keys():
-                    item_settings['volumes'] = {'/mblocks/{}/{}{}'.format(stack.name, item.name, item_image_volume): {'bind': item_image_volume, 'mode': 'rw'}}
-            """
-            item_endpoint_config =  client.api.create_endpoint_config(aliases=['{}-{}'.format(stack.name, item.name)])
-            item_network_config = { network:item_endpoint_config }
-            container_id  = client.api.create_container(item.image,
-                                                        name=item_container_name,
-                                                        detach=True,
-                                                        networking_config = client.api.create_networking_config(item_network_config),
-                                                        **item_settings
-                                                        )
-            client.api.start(container=container_id)
+            if stack.name =='server' and item.name == 'gateway':
+                item_config['ports'] = {80:80}
+            if len(item.volumes) > 0:
+                item_config['volumes'] = { item_volume.get('name'):item_volume.get('value') for item_volume in item.volumes}
+            elif host_volume_path and item_image.attrs['Config']['Volumes']:
+                for item_volume in item_image.attrs['Config']['Volumes'].keys():
+                    Path('/mblocks/{}/{}{}'.format(stack.name, item.name,item_volume)).mkdir(parents=True, exist_ok=True)
+                item_config['volumes'] = { '{}/{}/{}{}'.format(host_volume_path, stack.name, item.name, item_volume):item_volume for item_volume in item_image.attrs['Config']['Volumes'].keys() }
 
+            item_container = docker.create_container(item.image, name=item_container_name, config=item_config)
+            item.ip = item_container.attrs['NetworkSettings']['Networks'][network]['IPAddress']
+            item.container_id = item_container.id
 
-    # get stack's container ip adress
-    for item in client.containers.list(all=True, filters={'name': '{}-{}-'.format(prefix, stack.name)}):
-        # get container's ip
-        stack_status[item.name.split('-')[2]] = {
-            'ip':item.attrs['NetworkSettings']['Networks'][network]['IPAddress'],
-            'container_id':item.id
-        }
-
-    for item in stack.services:
-        item.ip = stack_status[item.name]['ip']
-        item.container_id = stack_status[item.name]['container_id']
-    
-    stack.entrypoint = 'http://{}'.format(stack_status['main']['ip'])
+        if item.name == 'main':
+            stack.entrypoint = 'http://{}'.format(item.ip)
+        
     return {'name':stack.name,'url':stack.entrypoint,'routes':[{'paths':[stack.path]}]}
 
 
 def refresh_apps(apps):
     gateway_services = []
     for app in apps:
-        gateway_services.append(deploy_stack(client=client,network=network,stack=app,prefix=container_name_prefix))
+        gateway_services.append(deploy_stack(stack=app,prefix=container_name_prefix))
     db.commit()
     
     kong_config = {
@@ -145,9 +112,7 @@ def refresh_apps(apps):
 
     time.sleep(3)
     requests.post(('http://server-gateway:8001/config'), json=kong_config)
-
-    for item in client.containers.list(all=True, filters={'name': '{}-delete-'.format(container_name_prefix)}):
-       item.remove(force=True)
+    docker.remove_container({'name': '{}-delete-'.format(container_name_prefix)})
 
 
 def main() -> None:
