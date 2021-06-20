@@ -33,6 +33,7 @@ if not server_main.container_id:
     server_main.ip = '172.16.0.1'
     server_main.container_id = server_main_container.id
     server_main.volumes = [{'name':item_volume.split(':')[0],'value':item_volume.split(':')[1]} for item_volume in server_main_container.attrs['HostConfig']['Binds']]
+    server.entrypoint = 'http://{}'.format(server_main.ip)
     server_main_container.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
     docker.connect_network(container=server_main_container.id, network = network, ip= server_main.ip)
     db.commit()
@@ -78,10 +79,9 @@ def deploy_stack(*, stack, prefix: str):
             item_container = docker.create_container(item.image, name=item_container_name, config=item_config)
             item.ip = item_container.attrs['NetworkSettings']['Networks'][network]['IPAddress']
             item.container_id = item_container.id
-
-        if item.name == 'main':
-            stack.entrypoint = 'http://{}'.format(item.ip)
-        
+            if item.name == 'main':
+                stack.entrypoint = 'http://{}'.format(item.ip)
+    
     return {'name':stack.name,'url':stack.entrypoint,'routes':[{'paths':[stack.path]}]}
 
 
