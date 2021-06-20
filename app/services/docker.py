@@ -52,9 +52,6 @@ def create_container(image,*,name=None,config={}):
         port_bindings = config.get('ports')
     if config.get('volumes'):
         for source,target in config.get('volumes').items():
-            print('=================')
-            print(source)
-            Path(source).mkdir(parents=True, exist_ok=True)
             mounts.append(Mount(target=target,source=source,type="bind"))
     if config.get('aliases') and config.get('network'):
         network_config[config.get('network')] = client.api.create_endpoint_config(aliases=config.get('aliases'))
