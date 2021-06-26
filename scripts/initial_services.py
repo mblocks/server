@@ -21,18 +21,19 @@ def get_config(db) ->None:
             continue
         server_main = item # find server main service
     
-    if not server_main.container_id:
+    server_main_container = docker.get_container(name=server_main.container_id)
+    if server_main_container is None:
         """
         When server first boot, Server main container_id is empty.
         Rename it, Join network.
         """
         server_main_container = docker.get_container(image='mblocks/server')
-        server_main.ip = '172.16.0.1'
-        server_main.container_id = server_main_container.id
-        server_main.volumes = [{'name':item_volume.split(':')[0],'value':item_volume.split(':')[1]} for item_volume in server_main_container.attrs['HostConfig']['Binds']]
-        server.entrypoint = 'http://{}'.format(server_main.ip)
+        server_main_container = docker.connect_network(container=server_main_container.id, network = network)
         server_main_container.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
-        docker.connect_network(container=server_main_container.id, network = network, ip= server_main.ip)
+        server_main.volumes = [{'name':item_volume.split(':')[0],'value':item_volume.split(':')[1]} for item_volume in server_main_container.attrs['HostConfig']['Binds']]
+        server_main.ip = server_main_container.attrs['NetworkSettings']['Networks'][network]['IPAddress']
+        server_main.container_id = server_main_container.id
+        server.entrypoint = 'http://{}'.format(server_main.ip)
         db.commit()
 
     host_volume_path = None
