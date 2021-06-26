@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from typing import Optional, List
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
-from app import deps, config, schemas, utils
+from app import deps, schemas
 from app.db import crud, cache
 from scripts.initial_services import refresh_apps
 
@@ -38,7 +38,7 @@ async def create_app(payload: schemas.AppCreate,
             },
         ])
     created_app = crud.app.create(db=db, obj_in=payload)
-    background_tasks.add_task(refresh_apps, crud.app.get_multi(db=db,search={}))
+    background_tasks.add_task(refresh_apps)
     return created_app
 
 
@@ -161,7 +161,7 @@ async def create_app_service(app_id: int,
         ])
     payload.parent_id = app_id
     created_service = crud.service.create(db=db, obj_in=payload)
-    background_tasks.add_task(refresh_apps, crud.app.get_multi(db=db,search={}))
+    background_tasks.add_task(refresh_apps)
     return created_service
 
 
@@ -174,7 +174,7 @@ async def update_app_service(app_id: int,
                              ):
     find_service = crud.service.get(db, id=service_id)
     updated_service = crud.service.update(db=db, db_obj=find_service, obj_in=payload)
-    background_tasks.add_task(refresh_apps, crud.app.get_multi(db=db,search={}))
+    background_tasks.add_task(refresh_apps)
     return updated_service
 
 
