@@ -14,7 +14,7 @@ def init(streams):
     pipe.execute()
     pipe.reset()
 
-def append(stream, dispatch, payload):
+def append(stream, dispatch, payload={}):
     pipe = redis_client.pipeline()
     if isinstance(payload,list):
         for item in payload:
