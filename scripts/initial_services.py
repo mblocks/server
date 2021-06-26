@@ -1,4 +1,4 @@
-import logging
+# -*- coding: utf-8 -*-
 import time
 import requests
 from pathlib import Path
@@ -8,42 +8,45 @@ from app.services import docker
 from app.config import get_settings
 
 
-settings = get_settings()
-container_name_prefix = settings.CONTAINER_NAME_PREFIX
-network = settings.CONTAINER_NETWORK
-db = SessionLocal()
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+def get_config(db) ->None:
+    settings = get_settings()
+    container_name_prefix = settings.CONTAINER_NAME_PREFIX
+    network = settings.CONTAINER_NETWORK
+    if docker.get_network(network) is None:
+        docker.create_network(network, subnet='172.16.0.0/16', iprange='172.16.0.0/24', gateway='172.16.0.254')
+    
+    server = crud.app.get(db, id=1)
+    for item in server.services:
+        if item.name != 'main':
+            continue
+        server_main = item # find server main service
+    
+    if not server_main.container_id:
+        """
+        When server first boot, Server main container_id is empty.
+        Rename it, Join network.
+        """
+        server_main_container = docker.get_container(image='mblocks/server')
+        server_main.ip = '172.16.0.1'
+        server_main.container_id = server_main_container.id
+        server_main.volumes = [{'name':item_volume.split(':')[0],'value':item_volume.split(':')[1]} for item_volume in server_main_container.attrs['HostConfig']['Binds']]
+        server.entrypoint = 'http://{}'.format(server_main.ip)
+        server_main_container.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
+        docker.connect_network(container=server_main_container.id, network = network, ip= server_main.ip)
+        db.commit()
 
-if docker.get_network(network) is None:
-    docker.create_network(network, subnet='172.16.0.0/16', iprange='172.16.0.0/24', gateway='172.16.0.254')
+    host_volume_path = None
+    for item in server_main.volumes:
+        if item.get('value') == '/mblocks':
+            host_volume_path = item.get('name')
 
-server = crud.app.get(db, id=1)
-for item in server.services:
-    if item.name != 'main':
-        continue
-    server_main = item # find server main service
+    return {
+            'network': network,
+            'container_name_prefix': container_name_prefix,
+            'host_volume_path': host_volume_path,
+           }
 
-if not server_main.container_id:
-    """
-    When server first boot, Server main container_id is empty.
-    Rename it, Join network.
-    """
-    server_main_container = docker.get_container(image='mblocks/server')
-    server_main.ip = '172.16.0.1'
-    server_main.container_id = server_main_container.id
-    server_main.volumes = [{'name':item_volume.split(':')[0],'value':item_volume.split(':')[1]} for item_volume in server_main_container.attrs['HostConfig']['Binds']]
-    server.entrypoint = 'http://{}'.format(server_main.ip)
-    server_main_container.rename('{}-{}-{}-{}'.format(container_name_prefix, server.name, server_main.name, server_main.version))
-    docker.connect_network(container=server_main_container.id, network = network, ip= server_main.ip)
-    db.commit()
-
-host_volume_path = None
-for item in server_main.volumes:
-    if item.get('value') == '/mblocks':
-        host_volume_path = item.get('name')
-
-def deploy_stack(*, stack, prefix: str):
+def deploy_stack(*, stack, prefix: str, network: str, host_volume_path: str):
     # prepare images
     for item in [v.image for v in stack.services]:
         docker.get_image(item)
@@ -85,16 +88,24 @@ def deploy_stack(*, stack, prefix: str):
     return {'name':stack.name,'url':stack.entrypoint,'routes':[{'paths':[stack.path]}]}
 
 
-def refresh_apps(apps):
-    gateway_services = []
+def refresh_apps():
+    db = SessionLocal()
+    config = get_config(db)
+    apps = crud.app.get_multi(db=db,search={})
+    services = []
     for app in apps:
-        gateway_services.append(deploy_stack(stack=app,prefix=container_name_prefix))
+        services.append(deploy_stack(stack=app,
+                                     prefix=config.get('container_name_prefix'),
+                                     network=config.get('network'),
+                                     host_volume_path=config.get('host_volume_path')
+                                    )
+                               )
     db.commit()
     
     kong_config = {
         "_format_version": "2.1",
         "_transform": True,
-        "services":gateway_services,
+        "services":services,
         "plugins":[
             {
             "name":"redis-auth",
@@ -112,14 +123,10 @@ def refresh_apps(apps):
 
     time.sleep(3)
     requests.post(('http://server-gateway:8001/config'), json=kong_config)
-    docker.remove_container({'name': '{}-delete-'.format(container_name_prefix)})
-
+    docker.remove_container({'name': '{}-delete-'.format(config.get('container_name_prefix'))})
 
 def main() -> None:
-    logger.info("Creating initial services")
-    apps = crud.app.get_multi(db=db,search={})
-    refresh_apps(apps)
-    logger.info("Initial services created")
+    refresh_apps()
 
 
 if __name__ == "__main__":
