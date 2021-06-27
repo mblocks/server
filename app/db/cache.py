@@ -10,7 +10,7 @@ key_sessions = '{}:sessions'.format(perfix)
 key_users = '{}:users:{}'.format(perfix,'{}')
 key_users_sessions = '{}:users:{}:sessions'.format(perfix,'{}')
 key_users_authorized = '{}:users:{}:authorized'.format(perfix,'{}')
-key_roles = 'roles:{}'.format(perfix)
+key_roles = 'roles:{}'
 
 def generate_apikey(current_user) -> str:
     apikey = utils.generate_random_str()

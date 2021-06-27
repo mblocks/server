@@ -43,7 +43,7 @@ def init() -> None:
                         ]
         }))
 
-        db.add(models.Role(parent_id=1,title='管理员',auth='{}'))
+        db.add(models.Role(parent_id=1,title='admin',auth={}))
         db.add(models.Authorized(user_id=1,role_id=1,app_id=1)) # first user is admin
         db.commit()
 

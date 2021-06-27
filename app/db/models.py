@@ -141,6 +141,13 @@ class User(Base):
     display_name = Column(String(100))
     enabled = Column(Boolean, default=True)
     _password = Column("password",String(100))
+    data_enabled = Column(Boolean, default=True)
+    data_created_at = Column(DateTime,default=datetime.utcnow)
+    data_updated_at = Column(DateTime,onupdate=datetime.utcnow)
+    data_deleted_at = Column(DateTime)
+    data_created_by = Column(Integer)
+    data_updated_by = Column(Integer)
+    data_deleted_by = Column(Integer)
 
     @property
     def password(self):
