@@ -21,8 +21,10 @@ def create_network(name, *, subnet, iprange, gateway, aux_addresses={}):
     ipam_config = docker.types.IPAMConfig(pool_configs=[ipam_pool])
     client.api.create_network(name,ipam=ipam_config)
 
-def connect_network(*, container, network, ip):
+def connect_network(*, container, network, ip=None):
     client.api.connect_container_to_network(container,network,ipv4_address=ip)
+    if ip is None:
+        return get_container(name=container)
 
 def get_container(*, name = None, image = None):
     if name:
