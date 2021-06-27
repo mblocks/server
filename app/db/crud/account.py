@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy.orm import Session
+from app.db import cache
 from app.db.models import User
 from app.schemas import AccountCreate, AccountUpdate, Userinfo
 from .base import CRUDBase
@@ -18,9 +19,7 @@ class CRUDAccount(CRUDBase[User, AccountCreate, AccountUpdate]):
         if current_user:
             res['userinfo'] = {
                 'display_name':current_user.display_name,
-                'apps':[
-                        { 'name': 'admin', 'title': 'admin' },
-                       ]
+                'apps':list(cache.get_authorized(user_id=current_user.id).values())
             }
         return res
 

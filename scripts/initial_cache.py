@@ -25,8 +25,8 @@ def init_cache():
         cache.set_role(app=apps.get(item.parent_id), role=item)
     
     cache.set_authorized(user={'id':1,'apps':[{'id':1,
-                                                'name':'server',
-                                                'title':'server',
+                                                'name':'admin',
+                                                'title':'admin',
                                                 'roles':[]
                                                 }]
                               }

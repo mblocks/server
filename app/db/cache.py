@@ -38,7 +38,7 @@ def get_authorized(user_id, lite=True):
     if authorized is None:
         return {}
     if lite == True:
-        return authorized
+        return json.loads(authorized)
         
     roles = []
     for item_app in json.loads(authorized).values():
