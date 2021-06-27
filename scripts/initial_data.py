@@ -40,10 +40,11 @@ def init() -> None:
                                         {'name': 'KONG_PLUGINS', 'value': 'bundled,redis-auth'},
                                 ]
                             }
-                        ]
+                        ],
+            'roles':[
+                        {'title':'admin','auth':'{"query":200}'}
+            ]
         }))
-
-        db.add(models.Role(parent_id=1,title='admin',auth={}))
         db.add(models.Authorized(user_id=1,role_id=1,app_id=1)) # first user is admin
         db.commit()
 

@@ -8,6 +8,7 @@ from .base import CRUDBase
 class CRUDApp(CRUDBase[App, schemas.AppCreate, schemas.AppUpdate]):
     def before_create(self, db: Session, *, obj_in):
         del obj_in.services
+        del obj_in.roles
 
     def after_create(self, db: Session, *, db_obj, obj_in):
         for item in obj_in.services:
@@ -17,6 +18,13 @@ class CRUDApp(CRUDBase[App, schemas.AppCreate, schemas.AppUpdate]):
                 title=item.title,
                 image=item.image,
                 environment =item.environment
+            ))
+        for item in obj_in.roles:
+            db.add(Role(
+                parent_id=db_obj.id,
+                title=item.title,
+                description=item.description,
+                auth=item.auth
             ))
 
     def get_multi_with_roles(

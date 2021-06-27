@@ -2,7 +2,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from .service import Service, ServiceLite, ServiceCreate
 from .base import DBBase
-from .role import RoleLite
+from .role import Role, RoleLite
 
 
 # Shared properties
@@ -19,6 +19,7 @@ class AppCreate(AppBase):
     name: str
     title: str
     services: List[ServiceCreate]
+    roles: List[Role] = []
 
 
 class AppUpdate(AppBase):

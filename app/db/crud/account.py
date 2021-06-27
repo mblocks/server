@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session
 from app.db import cache
 from app.db.models import User
-from app.schemas import AccountCreate, AccountUpdate, Userinfo
+from app.schemas import AccountCreate, AccountUpdate
 from .base import CRUDBase
 
 class CRUDAccount(CRUDBase[User, AccountCreate, AccountUpdate]):
