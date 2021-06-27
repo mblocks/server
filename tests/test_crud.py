@@ -67,6 +67,7 @@ def test_user_create(db):
     user = crud.user.create(db=db, obj_in=UserCreate.parse_obj({
         'user_name': 'hello1',
         'email': 'hello1@mblocks.com',
+        'password': '12345',
         'apps': [
             {
                 'name': 'app1',
