@@ -23,7 +23,7 @@ def get_current_user(request: Request):
 
 def verify_user(request: Request):
     user_id = request.headers.get('x-consumer-id')
-    if request.headers.get('x-consumer-is-admin') != 'true' and '1' not in get_authorized(user_id=user_id):
+    if '1' not in get_authorized(user_id=user_id):
         raise HTTPException(status_code=403, detail="you can not access")
 
 

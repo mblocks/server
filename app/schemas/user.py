@@ -45,7 +45,6 @@ class CurrentUser(BaseModel):
     third: Optional[str] = None
     third_user_id: Optional[str] = None
     third_user_name: Optional[str] = None
-    is_admin: Optional[bool] = True
 
 
 class Userinfo(BaseModel):
