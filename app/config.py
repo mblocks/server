@@ -2,6 +2,7 @@
 import os
 import sys
 from functools import lru_cache
+from typing import List
 from pydantic import BaseSettings
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -30,6 +31,7 @@ class Settings(BaseSettings):
 
     CONTAINER_NAME_PREFIX: str = 'mblocks'
     CONTAINER_NETWORK: str = 'mblocks'
+    Environment: List[str] = ['FASTAPI_CONFIG','SQLALCHEMY_DATABASE_URI']
     class Config:
         case_sensitive: bool = True
         env_file: bool = ".env"

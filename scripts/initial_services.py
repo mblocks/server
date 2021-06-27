@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import time
 import requests
 from pathlib import Path
@@ -33,6 +34,7 @@ def get_config(db) ->None:
         server_main.volumes = [{'name':item_volume.split(':')[0],'value':item_volume.split(':')[1]} for item_volume in server_main_container.attrs['HostConfig']['Binds']]
         server_main.ip = server_main_container.attrs['NetworkSettings']['Networks'][network]['IPAddress']
         server_main.container_id = server_main_container.id
+        server_main.environment = [{'name':item,'value':os.getenv(item)} for item in settings.Environment if os.getenv(item)]
         server.entrypoint = 'http://{}'.format(server_main.ip)
         db.commit()
 
