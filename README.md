@@ -22,6 +22,9 @@ uvicorn app.main:app --reload
 
 pytest
 
+# test settings
+FASTAPI_CONFIG='test' pytest
+
 ```
 
 ## Generate Requirement
