@@ -1,7 +1,7 @@
 import logging
 from app import schemas
 from app.db.session import SessionLocal
-from app.db import crud
+from app.db import crud, models
 
 
 logging.basicConfig(level=logging.INFO)
@@ -40,8 +40,13 @@ def init() -> None:
                                         {'name': 'KONG_PLUGINS', 'value': 'bundled,redis-auth'},
                                 ]
                             }
-                        ]
+                        ],
+            'roles':[
+                        {'title':'admin','auth':'{"query":200}'}
+            ]
         }))
+        db.add(models.Authorized(user_id=1,role_id=1,app_id=1)) # first user is admin
+        db.commit()
 
 
 def main() -> None:

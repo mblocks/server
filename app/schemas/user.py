@@ -3,8 +3,12 @@ from pydantic import BaseModel
 from .base import DBBase
 from .role import RoleLite
 
+class App(BaseModel):
+    name: Optional[str] = None
+    title: Optional[str] = None
 
-class AppRoles(BaseModel):
+
+class AppRoles(App):
     id: int
     name: Optional[str] = None
     title: Optional[str] = None
@@ -45,12 +49,12 @@ class CurrentUser(BaseModel):
     third: Optional[str] = None
     third_user_id: Optional[str] = None
     third_user_name: Optional[str] = None
-    is_admin: Optional[bool] = True
 
 
 class Userinfo(BaseModel):
     display_name: Optional[str] = None
     email: Optional[str] = None
+    apps: List[App] = []
 
     class Config:
         orm_mode = True
