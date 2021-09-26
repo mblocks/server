@@ -126,6 +126,7 @@ def refresh_apps():
 
     time.sleep(3)
     requests.post(('http://server-gateway:8001/config'), json=kong_config)
+    print(kong_config)
     docker.remove_container({'name': '{}-delete-'.format(config.get('container_name_prefix'))})
 
 def main() -> None:
