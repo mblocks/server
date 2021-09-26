@@ -88,7 +88,7 @@ def deploy_stack(*, stack, prefix: str, network: str, host_volume_path: str):
             if item.name == 'main':
                 stack.entrypoint = 'http://{}'.format(item.ip)
     
-    return {'name':stack.name,'url':stack.entrypoint,'routes':[{'paths':[stack.path if stack.path else stack.name]}]}
+    return {'name':stack.name,'url':stack.entrypoint,'routes':[{'paths':[stack.path if stack.path else '/{}'.format(stack.name)]}]}
 
 
 def refresh_apps():
