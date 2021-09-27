@@ -16,6 +16,7 @@ sqlalchemy = "*"
 passlib = "*"
 bcrypt = "*"
 redis = "*"
+mysqlclient = "*"
 
 [requires]
 python_version = "3.8"
