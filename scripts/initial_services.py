@@ -94,7 +94,7 @@ def deploy_stack(*, stack, prefix: str, network: str, host_volume_path: str):
 def refresh_apps():
     db = SessionLocal()
     config = get_config(db)
-    apps = crud.app.get_multi(db=db,search={})
+    apps = crud.app.get_multi(db=db,search={},order_by='id desc')
     services = []
     for app in apps:
         services.append(deploy_stack(stack=app,

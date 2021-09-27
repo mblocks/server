@@ -4,8 +4,8 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from copy import deepcopy
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import expression
 from app.db.base_class import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -63,10 +63,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         *,
         search: Dict[str, str] = {},
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
+        order_by: str = None,
     ) -> List[ModelType]:
         query = db.query(self.model)
         query = self.__filter(query, search)
+        if order_by:
+            query = query.order_by(expression.text(order_by))
         return query.offset(skip).limit(limit).all()
 
     def count(
