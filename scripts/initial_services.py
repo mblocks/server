@@ -114,7 +114,7 @@ def refresh_apps():
             "name":"redis-auth",
             "config":{
                         "hide_credentials": True,
-                        "redis_host": 'server-redis',
+                        "redis_host": 'admin-redis',
                         "redis_key_prefix": "redis-auth:",
                         "consumer_keys": ["id", "third", "third_user_id", "third_user_name","is_admin"],
                         "anonymous": True,
