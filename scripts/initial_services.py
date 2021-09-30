@@ -59,7 +59,7 @@ def deploy_stack(*, stack, prefix: str, network: str, host_volume_path: str):
         item_pre_container = docker.get_container(name='{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
         if item_pre_container:
             item_pre_container.rename('{}-delete-{}-{}-{}'.format(prefix, stack.name, item.name, item.version-1))
-            if stack.name == 'server' and item.name == 'gateway':
+            if 'mblocks/gateway' in item.image:
                 item_pre_container.stop()
 
         item_container_name = '{}-{}-{}-{}'.format(prefix, stack.name, item.name, item.version)
@@ -73,7 +73,7 @@ def deploy_stack(*, stack, prefix: str, network: str, host_volume_path: str):
                 'aliases': ['{}-{}'.format(stack.name, item.name)],
                 'environment':{item_env.get('name'):item_env.get('value') for item_env in item.environment } # translate list of object to dict
             }
-            if stack.name =='server' and item.name == 'gateway':
+            if 'mblocks/gateway' in item.image:
                 item_config['ports'] = {80:80}
             if len(item.volumes) > 0:
                 item_config['volumes'] = { item_volume.get('name'):item_volume.get('value') for item_volume in item.volumes}
