@@ -12,7 +12,7 @@ def init() -> None:
     db = SessionLocal()
     if crud.app.count(db, search={}) == 0:
         crud.app.create(db=db, obj_in=schemas.AppCreate.parse_obj({
-            'name': 'server',
+            'name': 'admin',
             'title': 'server',
             'path': '/',
             'services': [
