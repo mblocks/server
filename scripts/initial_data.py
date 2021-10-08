@@ -38,6 +38,8 @@ def init() -> None:
                                         {'name': 'KONG_ADMIN_ERROR_LOG', 'value': '/dev/stdout'},
                                         {'name': 'KONG_ADMIN_LISTEN', 'value': '0.0.0.0:8001'},
                                         {'name': 'KONG_PLUGINS', 'value': 'bundled,redis-auth'},
+                                        {'name': 'KONG_NGINX_MAIN_ENV', 'value': 'REDIS_HOST'},
+                                        {'name': 'REDIS_HOST', 'value': 'redis.admin.mblocks'},
                                 ]
                             }
                         ],
