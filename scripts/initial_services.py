@@ -70,7 +70,7 @@ def deploy_stack(*, stack, prefix: str, network: str, host_volume_path: str):
             item_image = docker.get_image(item.image)
             item_config = {
                 'network': network,
-                'aliases': ['{}-{}'.format(stack.name, item.name)],
+                'aliases': ['{}-{}'.format(stack.name, item.name),'{}.{}.mblocks'.format(item.name,stack.name)],
                 'environment':{item_env.get('name'):item_env.get('value') for item_env in item.environment } # translate list of object to dict
             }
             if 'mblocks/gateway' in item.image:
