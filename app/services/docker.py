@@ -1,6 +1,5 @@
 import docker
 from docker.types import Mount
-from pathlib import Path
 
 #client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 client = docker.from_env()
