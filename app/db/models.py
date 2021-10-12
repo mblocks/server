@@ -48,6 +48,8 @@ class Service(Base):
     version = Column(Integer, default=1)
     _environment = Column("environment",String(400),default='[]')
     _volumes = Column("volumes",String(400),default='[]')
+    _command = Column("command",String(400),default='[]')
+    _proxy = Column("proxy",String(400),default='{}')
 
     data_enabled = Column(Boolean, default=True)
     data_created_at = Column(DateTime,default=datetime.utcnow)
@@ -74,6 +76,24 @@ class Service(Base):
     def volumes(self, value):
         # https://docs.sqlalchemy.org/en/14/orm/mapped_attributes.html#using-custom-datatypes-at-the-core-level
         self._volumes = json.dumps(jsonable_encoder(value))
+
+    @property
+    def command(self):
+        return json.loads(self._command)
+
+    @command.setter
+    def command(self, value):
+        # https://docs.sqlalchemy.org/en/14/orm/mapped_attributes.html#using-custom-datatypes-at-the-core-level
+        self._command = json.dumps(jsonable_encoder(value))
+
+    @property
+    def proxy(self):
+        return json.loads(self._proxy)
+
+    @proxy.setter
+    def proxy(self, value):
+        # https://docs.sqlalchemy.org/en/14/orm/mapped_attributes.html#using-custom-datatypes-at-the-core-level
+        self._proxy = json.dumps(jsonable_encoder(value))
 
 
 class Role(Base):

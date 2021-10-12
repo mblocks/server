@@ -14,8 +14,10 @@ def test_app_create(db):
                     'title': 'main-title',
                     'image': 'nginx:alpine',
                     'environment': [
-                        {'name': 'DB_HOST', 'value': '127.0.0.1'}
-                    ]
+                        {'name': 'DB_HOST', 'value': '127.0.0.2'}
+                    ],
+                    'command':["/bin/sh echo 'hello'"],
+                    'proxy':{'services/minio':'/'},
                  },
                 {'name': 'other',
                     'title': 'other-title',

@@ -17,6 +17,8 @@ class ServiceBase(BaseModel):
     image: Optional[str] = None
     environment: List[Environment] = []
     volumes: List[Volume] = []
+    command: List[str] = []
+    proxy: dict = {}
     parent_id: Optional[int] = None
     version: Optional[int] = None
 

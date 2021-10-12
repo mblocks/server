@@ -40,7 +40,7 @@ def get_container(*, name = None, image = None):
 
 def create_container(image,*,name=None,config={}):
     settings = {}
-    for item in ['environment']:
+    for item in ['environment','command']:
         if config.get(item):
             settings[item] = config.get(item)
     

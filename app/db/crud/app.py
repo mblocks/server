@@ -17,7 +17,9 @@ class CRUDApp(CRUDBase[App, schemas.AppCreate, schemas.AppUpdate]):
                 name=item.name,
                 title=item.title,
                 image=item.image,
-                environment =item.environment
+                environment =item.environment,
+                command =item.command,
+                proxy =item.proxy
             ))
         for item in obj_in.roles:
             db.add(Role(

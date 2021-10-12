@@ -3,7 +3,7 @@ import os
 import time
 import requests
 from pathlib import Path
-from app.db.session import SessionLocal
+from app.db.session import SessionLocal, redis_client
 from app.db import crud
 from app.services import docker
 from app.config import get_settings
@@ -75,6 +75,8 @@ def deploy_stack(*, stack, prefix: str, network: str, host_volume_path: str):
             }
             if 'mblocks/gateway' in item.image:
                 item_config['ports'] = {80:80}
+            if len(item.command) > 0:
+                item_config['command'] = item.command
             if len(item.volumes) > 0:
                 item_config['volumes'] = { item_volume.get('name'):item_volume.get('value') for item_volume in item.volumes}
             elif host_volume_path and item_image.attrs['Config']['Volumes']:
@@ -85,6 +87,9 @@ def deploy_stack(*, stack, prefix: str, network: str, host_volume_path: str):
             item_container = docker.create_container(item.image, name=item_container_name, config=item_config)
             item.ip = item_container.attrs['NetworkSettings']['Networks'][network]['IPAddress']
             item.container_id = item_container.id
+            if len(item.proxy) > 0:
+                for k,v in item.proxy.items():
+                    redis_client.set('proxy:{}'.format(k),item.ip)
             if item.name == 'main':
                 stack.entrypoint = 'http://{}'.format(item.ip)
     
